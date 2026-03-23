@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="MorphNavBar">
+        <attr name="barColor" format="color" />
+        <attr name="bubbleColor" format="color" />
+        <attr name="selectedIconColor" format="color" />
+        <attr name="unselectedIconColor" format="color" />
+
+        <attr name="barHeight" format="dimension" />
+        <attr name="barCornerRadius" format="dimension" />
+        <attr name="bubbleSize" format="dimension" />
+        <attr name="bubbleOverlap" format="dimension" />
+        <attr name="iconSize" format="dimension" />
+
+        <attr name="waveHeight" format="dimension" />
+        <attr name="waveWidth" format="dimension" />
+
+        <attr name="animationDuration" format="integer" />
+        <attr name="shadowRadius" format="dimension" />
+        <attr name="shadowAlpha" format="integer" />
+
+    </declare-styleable>
+</resources>
