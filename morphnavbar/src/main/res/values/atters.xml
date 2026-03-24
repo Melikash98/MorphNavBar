@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="MorphNavBar">
-        <attr name="barColor" format="color" />
-        <attr name="bubbleColor" format="color" />
-        <attr name="selectedIconColor" format="color" />
-        <attr name="unselectedIconColor" format="color" />
+    <declare-styleable name="LiquidBottomNavigationView">
+        <attr name="lbv_barColor" format="color" />
+        <attr name="lbv_selectedColor" format="color" />
+        <attr name="lbv_unselectedColor" format="color" />
+        <attr name="lbv_shadowColor" format="color" />
+        <attr name="lbv_indicatorColor" format="color" />
 
-        <attr name="barHeight" format="dimension" />
-        <attr name="barCornerRadius" format="dimension" />
-        <attr name="bubbleSize" format="dimension" />
-        <attr name="bubbleOverlap" format="dimension" />
-        <attr name="iconSize" format="dimension" />
-
-        <attr name="waveHeight" format="dimension" />
-        <attr name="waveWidth" format="dimension" />
-
-        <attr name="animationDuration" format="integer" />
-        <attr name="shadowRadius" format="dimension" />
-        <attr name="shadowAlpha" format="integer" />
+        <attr name="lbv_barRadius" format="dimension" />
+        <attr name="lbv_barHeight" format="dimension" />
+        <attr name="lbv_barSideMargin" format="dimension" />
+        <attr name="lbv_barBottomMargin" format="dimension" />
+        <attr name="lbv_bubbleDiameter" format="dimension" />
+        <attr name="lbv_itemIconSize" format="dimension" />
+        <attr name="lbv_indicatorWidth" format="dimension" />
+        <attr name="lbv_indicatorHeight" format="dimension" />
+        <attr name="lbv_shadowBlur" format="dimension" />
+        <attr name="lbv_shadowDy" format="dimension" />
+        <attr name="lbv_animationDuration" format="integer" />
     </declare-styleable>
 </resources>
