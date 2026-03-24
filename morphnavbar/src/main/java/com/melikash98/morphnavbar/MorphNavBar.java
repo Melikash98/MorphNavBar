@@ -59,7 +59,7 @@ public class MorphNavBar extends FrameLayout {
     private int iconSizePx;
     private int waveHeightPx;
     private int waveWidthPx;
-    private int animationDuration = 340;
+    private int animationDuration = 360;
     private int shadowRadiusPx;
     private int shadowAlpha = 24;
 
@@ -92,7 +92,7 @@ public class MorphNavBar extends FrameLayout {
         bubbleSizePx = dp(context, 72);
         bubbleOverlapPx = dp(context, 26);
         iconSizePx = dp(context, 26);
-        waveHeightPx = dp(context, 16);
+        waveHeightPx = dp(context, 18);
         waveWidthPx = dp(context, 112);
         shadowRadiusPx = dp(context, 14);
     }
@@ -129,17 +129,20 @@ public class MorphNavBar extends FrameLayout {
         setClipToPadding(false);
 
         backgroundView = new BackgroundView(context);
-        LayoutParams bgLp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        addView(backgroundView, bgLp);
+        addView(backgroundView, new LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
 
         itemsContainer = new LinearLayout(context);
         itemsContainer.setOrientation(LinearLayout.HORIZONTAL);
         itemsContainer.setGravity(Gravity.CENTER_VERTICAL);
         itemsContainer.setClipChildren(false);
         itemsContainer.setClipToPadding(false);
-
-        LayoutParams containerLp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        addView(itemsContainer, containerLp);
+        addView(itemsContainer, new LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
 
         bubbleView = new FrameLayout(context);
         bubbleView.setClipChildren(false);
@@ -158,9 +161,10 @@ public class MorphNavBar extends FrameLayout {
         bubbleIconView = new ImageView(context);
         bubbleIconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         ImageViewCompat.setImageTintList(bubbleIconView, ColorStateList.valueOf(selectedIconColor));
-
-        FrameLayout.LayoutParams bubbleIconLp = new FrameLayout.LayoutParams(iconSizePx, iconSizePx, Gravity.CENTER);
-        bubbleView.addView(bubbleIconView, bubbleIconLp);
+        bubbleView.addView(
+                bubbleIconView,
+                new FrameLayout.LayoutParams(iconSizePx, iconSizePx, Gravity.CENTER)
+        );
 
         bubbleView.setVisibility(INVISIBLE);
     }
@@ -206,16 +210,22 @@ public class MorphNavBar extends FrameLayout {
 
         for (int i = 0; i < items.size(); i++) {
             final int index = i;
-            final MorphTabItem item = items.get(i);
+            MorphTabItem item = items.get(i);
 
             TabButton button = new TabButton(getContext());
             button.iconView.setImageResource(item.iconRes);
-            ImageViewCompat.setImageTintList(button.iconView, ColorStateList.valueOf(unselectedIconColor));
+            ImageViewCompat.setImageTintList(
+                    button.iconView,
+                    ColorStateList.valueOf(unselectedIconColor)
+            );
 
-            button.setOnClickListener(v -> applySelection(index, true, true));
+            button.setOnClickListener(v -> setSelectedIndex(index, true));
 
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
-            itemsContainer.addView(button, lp);
+            itemsContainer.addView(
+                    button,
+                    new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+            );
+
             tabButtons.add(button);
         }
 
@@ -236,7 +246,7 @@ public class MorphNavBar extends FrameLayout {
     }
 
     public void setSelectedIndex(int index) {
-        applySelection(index, true, true);
+        setSelectedIndex(index, true);
     }
 
     public void setSelectedIndex(int index, boolean animate) {
@@ -293,17 +303,18 @@ public class MorphNavBar extends FrameLayout {
     public void setIconSizePx(int px) {
         this.iconSizePx = px;
 
-        ViewGroup.LayoutParams bubbleIconLp = bubbleIconView.getLayoutParams();
-        bubbleIconLp.width = px;
-        bubbleIconLp.height = px;
-        bubbleIconView.setLayoutParams(bubbleIconLp);
+        ViewGroup.LayoutParams lp = bubbleIconView.getLayoutParams();
+        lp.width = px;
+        lp.height = px;
+        bubbleIconView.setLayoutParams(lp);
 
         for (TabButton button : tabButtons) {
-            ViewGroup.LayoutParams lp = button.iconView.getLayoutParams();
-            lp.width = px;
-            lp.height = px;
-            button.iconView.setLayoutParams(lp);
+            ViewGroup.LayoutParams childLp = button.iconView.getLayoutParams();
+            childLp.width = px;
+            childLp.height = px;
+            button.iconView.setLayoutParams(childLp);
         }
+
         requestLayout();
     }
 
@@ -346,7 +357,6 @@ public class MorphNavBar extends FrameLayout {
 
         int oldIndex = selectedIndex;
         selectedIndex = index;
-
         waveDirection = (index >= oldIndex) ? 1 : -1;
 
         updateTabVisuals();
@@ -360,7 +370,10 @@ public class MorphNavBar extends FrameLayout {
         if (!animate) {
             bubbleIconView.setAlpha(1f);
             bubbleIconView.setImageResource(item.iconRes);
-            ImageViewCompat.setImageTintList(bubbleIconView, ColorStateList.valueOf(selectedIconColor));
+            ImageViewCompat.setImageTintList(
+                    bubbleIconView,
+                    ColorStateList.valueOf(selectedIconColor)
+            );
             syncBubblePosition(false);
         } else {
             animateBubbleToIndex(index);
@@ -378,13 +391,10 @@ public class MorphNavBar extends FrameLayout {
             TabButton button = tabButtons.get(i);
             boolean selected = i == selectedIndex;
 
-            float alpha = selected ? 0f : 1f;
-            float scale = selected ? 0.80f : 1.0f;
-
             button.iconView.animate()
-                    .alpha(alpha)
-                    .scaleX(scale)
-                    .scaleY(scale)
+                    .alpha(selected ? 0f : 1f)
+                    .scaleX(selected ? 0.78f : 1f)
+                    .scaleY(selected ? 0.78f : 1f)
                     .setDuration(180)
                     .setInterpolator(new AccelerateDecelerateInterpolator())
                     .start();
@@ -402,7 +412,10 @@ public class MorphNavBar extends FrameLayout {
                 .setDuration(animationDuration / 2L)
                 .withEndAction(() -> {
                     bubbleIconView.setImageResource(newIconRes);
-                    ImageViewCompat.setImageTintList(bubbleIconView, ColorStateList.valueOf(selectedIconColor));
+                    ImageViewCompat.setImageTintList(
+                            bubbleIconView,
+                            ColorStateList.valueOf(selectedIconColor)
+                    );
                     bubbleIconView.animate()
                             .alpha(1f)
                             .setDuration(animationDuration / 2L)
@@ -435,17 +448,14 @@ public class MorphNavBar extends FrameLayout {
 
         bubbleMoveAnimator = ValueAnimator.ofFloat(currentBubbleCenterX, targetCenterX);
         bubbleMoveAnimator.setDuration(animationDuration);
-        bubbleMoveAnimator.setInterpolator(new OvershootInterpolator(0.70f));
-
+        bubbleMoveAnimator.setInterpolator(new OvershootInterpolator(0.68f));
         bubbleMoveAnimator.addUpdateListener(animation -> {
             float value = (float) animation.getAnimatedValue();
             currentBubbleCenterX = value;
-
             bubbleView.setTranslationX(value - (bubbleSizePx / 2f));
             backgroundView.setWaveCenterX(value);
             backgroundView.invalidate();
         });
-
         bubbleMoveAnimator.start();
 
         bubbleView.animate()
@@ -467,8 +477,8 @@ public class MorphNavBar extends FrameLayout {
 
         PropertyValuesHolder holder = PropertyValuesHolder.ofKeyframe(
                 "waveMorphFraction",
-                Keyframe.ofFloat(0f, 0.82f),
-                Keyframe.ofFloat(0.25f, 1.26f),
+                Keyframe.ofFloat(0f, 0.84f),
+                Keyframe.ofFloat(0.28f, 1.25f),
                 Keyframe.ofFloat(0.60f, 0.98f),
                 Keyframe.ofFloat(1f, 1f)
         );
@@ -520,7 +530,7 @@ public class MorphNavBar extends FrameLayout {
         }
 
         @Override
-        protected void onDraw(Canvas canvas) {
+        protected void onDraw(@NonNull Canvas canvas) {
             super.onDraw(canvas);
 
             paint.setColor(barColor);
@@ -540,8 +550,8 @@ public class MorphNavBar extends FrameLayout {
                 waveCenterX = w / 2f;
             }
 
-            float waveWidthScale = 0.86f + (0.18f * waveMorphFraction);
-            float waveHeightScale = 0.78f + (0.30f * waveMorphFraction);
+            float waveWidthScale = 0.90f + (0.16f * waveMorphFraction);
+            float waveHeightScale = 0.80f + (0.28f * waveMorphFraction);
 
             float localWaveWidth = waveWidthPx * waveWidthScale;
             float localWaveHeight = waveHeightPx * waveHeightScale;
@@ -550,7 +560,8 @@ public class MorphNavBar extends FrameLayout {
             float waveEnd = Math.min(w - radius, waveCenterX + (localWaveWidth / 2f));
             float wavePeakY = top - localWaveHeight;
 
-            float directionSkew = waveDirection * localWaveWidth * 0.05f * (1f - Math.abs(waveMorphFraction - 0.5f) * 2f);
+            float directionSkew =
+                    waveDirection * localWaveWidth * 0.05f * (1f - Math.abs(waveMorphFraction - 0.5f) * 2f);
 
             path.reset();
 
@@ -558,7 +569,7 @@ public class MorphNavBar extends FrameLayout {
             path.lineTo(waveStart, top);
 
             path.cubicTo(
-                    waveStart + localWaveWidth * 0.16f,
+                    waveStart + localWaveWidth * 0.15f,
                     top,
                     waveCenterX - localWaveWidth * 0.14f + directionSkew,
                     wavePeakY,
@@ -569,7 +580,7 @@ public class MorphNavBar extends FrameLayout {
             path.cubicTo(
                     waveCenterX + localWaveWidth * 0.14f + directionSkew,
                     wavePeakY,
-                    waveEnd - localWaveWidth * 0.16f,
+                    waveEnd - localWaveWidth * 0.15f,
                     top,
                     waveEnd,
                     top
@@ -595,27 +606,6 @@ public class MorphNavBar extends FrameLayout {
             path.close();
 
             canvas.drawPath(path, paint);
-        }
-    }
-
-    private static class TabButton extends FrameLayout {
-        final ImageView iconView;
-
-        TabButton(Context context) {
-            super(context);
-            setClickable(true);
-            setFocusable(true);
-            setBackground(null);
-
-            iconView = new ImageView(context);
-            iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-
-            LayoutParams lp = new LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    Gravity.CENTER
-            );
-            addView(iconView, lp);
         }
     }
 }
