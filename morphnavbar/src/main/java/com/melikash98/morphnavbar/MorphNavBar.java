@@ -47,7 +47,7 @@ import java.util.List;
  * the center indicator line, and the built-in outline icons directly on canvas.
  */
 public class MorphNavBar extends View {
-    private static final int DEFAULT_ANIMATION_DURATION = 520;
+    private static final int DEFAULT_ANIMATION_DURATION = 360;
 
     private final Paint barPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -97,15 +97,15 @@ public class MorphNavBar extends View {
 
     private float bubbleCenterY;
 
-    public MorphNavBar(@NonNull Context context) {
+    public  MorphNavBar(@NonNull Context context) {
         this(context, null);
     }
 
-    public MorphNavBar(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public  MorphNavBar(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public MorphNavBar(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public  MorphNavBar(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initDefaults();
         readAttributes(context, attrs, defStyleAttr);
@@ -114,7 +114,6 @@ public class MorphNavBar extends View {
         setFocusable(true);
         setWillNotDraw(false);
 
-        // Software rendering keeps the path shadow and path ops consistent on older devices.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
             setLayerType(LAYER_TYPE_SOFTWARE, null);
         }
@@ -129,16 +128,17 @@ public class MorphNavBar extends View {
         activeIconColor = Color.WHITE;
         inactiveIconColor = Color.parseColor("#00CFC0");
 
+        // Smaller, closer to the reference video.
         barRadius = dp(22);
-        barHeight = dp(160);
-        barSideMargin = dp(36);
-        barBottomMargin = dp(34);
-        bubbleDiameter = dp(92);
-        itemIconSize = dp(24);
-        indicatorWidth = dp(120);
+        barHeight = dp(76);
+        barSideMargin = dp(28);
+        barBottomMargin = dp(20);
+        bubbleDiameter = dp(48);
+        itemIconSize = dp(21);
+        indicatorWidth = dp(92);
         indicatorHeight = dp(2);
-        shadowBlur = dp(16);
-        shadowDy = dp(6);
+        shadowBlur = dp(14);
+        shadowDy = dp(5);
         animationDuration = DEFAULT_ANIMATION_DURATION;
     }
 
@@ -198,57 +198,48 @@ public class MorphNavBar extends View {
         activeIconPaint.setColor(activeIconColor);
     }
 
-    /**
-     * Replaces all tabs in the bar.
-     */
     public void setTabs(@NonNull List<LiquidTabItem> tabs) {
         items.clear();
         items.addAll(tabs);
+
         if (selectedIndex >= items.size()) {
             selectedIndex = 0;
         }
+
         fromIndex = selectedIndex;
         toIndex = selectedIndex;
         progress = 1f;
+
         rebuildCenters();
         requestLayout();
         invalidate();
     }
 
-    /**
-     * Replaces all tabs in the bar.
-     */
     public void setTabs(@NonNull LiquidTabItem... tabs) {
         items.clear();
         Collections.addAll(items, tabs);
+
         if (selectedIndex >= items.size()) {
             selectedIndex = 0;
         }
+
         fromIndex = selectedIndex;
         toIndex = selectedIndex;
         progress = 1f;
+
         rebuildCenters();
         requestLayout();
         invalidate();
     }
 
-    /**
-     * Returns the current selected tab index.
-     */
     public int getSelectedIndex() {
         return selectedIndex;
     }
 
-    /**
-     * Sets the selected index and animates the liquid transition.
-     */
     public void setSelectedIndex(int index) {
         setSelectedIndex(index, true);
     }
 
-    /**
-     * Sets the selected index with optional animation.
-     */
     public void setSelectedIndex(int index, boolean animate) {
         if (items.isEmpty() || index < 0 || index >= items.size() || index == selectedIndex) {
             return;
@@ -256,6 +247,7 @@ public class MorphNavBar extends View {
 
         if (animator != null) {
             animator.cancel();
+            animator = null;
         }
 
         if (!animate || centerXs.isEmpty()) {
@@ -287,6 +279,7 @@ public class MorphNavBar extends View {
                 selectedIndex = toIndex;
                 fromIndex = selectedIndex;
                 progress = 1f;
+
                 if (listener != null && selectedIndex >= 0 && selectedIndex < items.size()) {
                     listener.onTabSelected(selectedIndex, items.get(selectedIndex));
                 }
@@ -296,9 +289,6 @@ public class MorphNavBar extends View {
         animator.start();
     }
 
-    /**
-     * Registers a selection listener.
-     */
     public void setOnTabSelectedListener(@Nullable OnTabSelectedListener listener) {
         this.listener = listener;
     }
@@ -344,14 +334,13 @@ public class MorphNavBar extends View {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int width = resolveSize(
-                (int) Math.ceil(getPaddingLeft() + getPaddingRight() + dp(360)),
-                widthMeasureSpec
+        int desiredWidth = (int) Math.ceil(getPaddingLeft() + getPaddingRight() + dp(360));
+        int desiredHeight = (int) Math.ceil(
+                getPaddingTop() + getPaddingBottom() + barHeight + bubbleDiameter * 0.28f + barBottomMargin
         );
-        int height = resolveSize(
-                (int) Math.ceil(getPaddingTop() + getPaddingBottom() + barHeight + bubbleDiameter * 0.60f + barBottomMargin),
-                heightMeasureSpec
-        );
+
+        int width = resolveSize(desiredWidth, widthMeasureSpec);
+        int height = resolveSize(desiredHeight, heightMeasureSpec);
         setMeasuredDimension(width, height);
     }
 
@@ -365,7 +354,8 @@ public class MorphNavBar extends View {
         float top = bottom - barHeight;
         barRect.set(left, top, right, bottom);
 
-        bubbleCenterY = top + bubbleDiameter * 0.50f;
+        // Bubble sits slightly above the bar center like the reference.
+        bubbleCenterY = top + bubbleDiameter * 0.42f;
 
         rebuildCenters();
     }
@@ -375,6 +365,7 @@ public class MorphNavBar extends View {
         if (items.isEmpty()) {
             return;
         }
+
         float width = barRect.width();
         float seg = width / items.size();
         for (int i = 0; i < items.size(); i++) {
@@ -398,11 +389,7 @@ public class MorphNavBar extends View {
     }
 
     private void drawShadow(Canvas canvas) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            shadowPaint.setShadowLayer(shadowBlur, 0f, shadowDy, shadowColor);
-        } else {
-            shadowPaint.setShadowLayer(shadowBlur, 0f, shadowDy, shadowColor);
-        }
+        shadowPaint.setShadowLayer(shadowBlur, 0f, shadowDy, shadowColor);
         canvas.drawRoundRect(barRect, barRadius, barRadius, shadowPaint);
         shadowPaint.clearShadowLayer();
     }
@@ -413,15 +400,21 @@ public class MorphNavBar extends View {
 
     private void drawIndicator(Canvas canvas) {
         float cx = barRect.centerX();
-        float cy = barRect.bottom - dp(34);
-        tempRect.set(cx - indicatorWidth / 2f, cy - indicatorHeight / 2f,
-                cx + indicatorWidth / 2f, cy + indicatorHeight / 2f);
+        float cy = barRect.bottom - dp(18);
+
+        tempRect.set(
+                cx - indicatorWidth / 2f,
+                cy - indicatorHeight / 2f,
+                cx + indicatorWidth / 2f,
+                cy + indicatorHeight / 2f
+        );
+
         canvas.drawRoundRect(tempRect, indicatorHeight, indicatorHeight, indicatorPaint);
     }
 
     private void drawInactiveIcons(Canvas canvas) {
         float bubbleX = getBubbleCenterX();
-        float influenceRadius = bubbleDiameter * 0.55f;
+        float influenceRadius = bubbleDiameter * 0.60f;
 
         for (int i = 0; i < items.size(); i++) {
             LiquidTabItem item = items.get(i);
@@ -430,12 +423,12 @@ public class MorphNavBar extends View {
             float t = clamp(1f - (distance / influenceRadius), 0f, 1f);
             float eased = iconInterpolator.getInterpolation(t);
 
-            // The inactive icon gently fades as the bubble approaches.
-            float inactiveAlpha = 1f - 0.72f * eased;
-            float activeAlpha = 0.88f * eased;
+            float inactiveAlpha = 1f - 0.75f * eased;
+            float activeAlpha = 0.92f * eased;
 
             Drawable base = item.getIcon();
             Drawable selected = item.getSelectedIcon();
+
             if (selected == null) {
                 drawDrawable(canvas, base, centerX, bubbleCenterY, inactiveIconColor, inactiveAlpha);
             } else {
@@ -446,33 +439,32 @@ public class MorphNavBar extends View {
     }
 
     private void drawActiveBlob(Canvas canvas) {
-        if (items.isEmpty()) {
-            return;
-        }
-
         float startX = getCenterX(fromIndex);
         float endX = getCenterX(toIndex);
         float t = motionInterpolator.getInterpolation(progress);
         float blobX = lerp(startX, endX, t);
 
         float r = bubbleDiameter / 2f;
-        float startR = r * (0.98f - 0.22f * t);
-        float endR = r * (0.78f + 0.18f * t);
-        float bridgeR = r * (0.22f + 0.08f * (float) Math.sin(Math.PI * t));
+        float startR = r * (0.98f - 0.18f * t);
+        float endR = r * (0.80f + 0.12f * t);
+        float bridgeR = r * (0.18f + 0.07f * (float) Math.sin(Math.PI * t));
 
         Path p1 = circlePath(startX, bubbleCenterY, startR);
         Path p2 = circlePath(endX, bubbleCenterY, endR);
-        Path p3 = circlePath(blobX, bubbleCenterY - r * 0.18f * (1f - Math.abs(0.5f - t) * 2f), bridgeR);
+        Path p3 = circlePath(
+                blobX,
+                bubbleCenterY - r * 0.12f * (1f - Math.abs(0.5f - t) * 2f),
+                bridgeR
+        );
 
         Path blob = new Path();
         blob.set(p1);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Path merged = new Path(blob);
-            merged.op(p2, Path.Op.UNION);
-            merged.op(p3, Path.Op.UNION);
+            merged.op(p2, Op.UNION);
+            merged.op(p3, Op.UNION);
             blob = merged;
         } else {
-            // Fallback path for completeness, though minSdk is 21.
             blob.addPath(p2);
             blob.addPath(p3);
         }
@@ -496,13 +488,12 @@ public class MorphNavBar extends View {
         LiquidTabItem item = items.get(iconIndex);
 
         float scale = 1f + 0.08f * (float) Math.sin(Math.PI * t);
-        float alpha = 1f;
-
         Drawable selected = item.getSelectedIcon();
+
         if (selected != null) {
-            drawDrawable(canvas, selected, bubbleX, bubbleCenterY, activeIconColor, alpha, scale);
+            drawDrawable(canvas, selected, bubbleX, bubbleCenterY, activeIconColor, 1f, scale);
         } else {
-            drawDrawable(canvas, item.getIcon(), bubbleX, bubbleCenterY, activeIconColor, alpha, scale);
+            drawDrawable(canvas, item.getIcon(), bubbleX, bubbleCenterY, activeIconColor, 1f, scale);
         }
     }
 
@@ -524,10 +515,17 @@ public class MorphNavBar extends View {
                               float scale) {
         Drawable d = drawable.mutate();
         d.setTint(tint);
+
         int size = Math.round(itemIconSize * scale);
         int half = size / 2;
-        d.setBounds(Math.round(centerX) - half, Math.round(centerY) - half,
-                Math.round(centerX) + half, Math.round(centerY) + half);
+
+        d.setBounds(
+                Math.round(centerX) - half,
+                Math.round(centerY) - half,
+                Math.round(centerX) + half,
+                Math.round(centerY) + half
+        );
+
         int oldAlpha = d.getAlpha();
         d.setAlpha((int) (255f * clamp(alpha, 0f, 1f)));
         d.draw(canvas);
@@ -538,6 +536,7 @@ public class MorphNavBar extends View {
         if (items.isEmpty()) {
             return barRect.centerX();
         }
+
         float startX = getCenterX(fromIndex);
         float endX = getCenterX(toIndex);
         float t = motionInterpolator.getInterpolation(progress);
@@ -590,11 +589,13 @@ public class MorphNavBar extends View {
         if (centerXs.isEmpty()) {
             return -1;
         }
-        float top = barRect.top - bubbleDiameter * 0.20f;
+
+        float top = barRect.top - bubbleDiameter * 0.18f;
         float bottom = barRect.bottom;
         if (y < top || y > bottom) {
             return -1;
         }
+
         float segmentWidth = barRect.width() / items.size();
         int index = (int) ((x - barRect.left) / segmentWidth);
         if (index < 0 || index >= items.size()) {
