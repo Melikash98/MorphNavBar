@@ -18,6 +18,5 @@
         <attr name="animationDuration" format="integer" />
         <attr name="shadowRadius" format="dimension" />
         <attr name="shadowAlpha" format="integer" />
-
     </declare-styleable>
 </resources>
