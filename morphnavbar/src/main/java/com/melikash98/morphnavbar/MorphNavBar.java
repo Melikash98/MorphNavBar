@@ -23,7 +23,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.widget.ImageViewCompat;
 
@@ -32,10 +31,10 @@ import java.util.List;
 
 public class MorphNavBar extends FrameLayout {
     public interface OnTabSelectedListener {
-        void onTabSelected(int index, MorphTabItem item);
+        void onTabSelected(int index, TabItem item);
     }
 
-    private final List<MorphTabItem> items = new ArrayList<>();
+    private final List<TabItem> items = new ArrayList<>();
     private final List<TabButton> tabButtons = new ArrayList<>();
 
     private BackgroundView backgroundView;
@@ -197,7 +196,7 @@ public class MorphNavBar extends FrameLayout {
         }
     }
 
-    public void setItems(List<MorphTabItem> newItems) {
+    public void setItems(List<TabItem> newItems) {
         items.clear();
         items.addAll(newItems);
 
@@ -206,7 +205,7 @@ public class MorphNavBar extends FrameLayout {
 
         for (int i = 0; i < items.size(); i++) {
             final int index = i;
-            final MorphTabItem item = items.get(i);
+            final TabItem item = items.get(i);
 
             TabButton button = new TabButton(getContext());
             button.iconView.setImageResource(item.iconRes);
@@ -355,7 +354,7 @@ public class MorphNavBar extends FrameLayout {
             bubbleView.setVisibility(VISIBLE);
         }
 
-        MorphTabItem item = items.get(index);
+        TabItem item = items.get(index);
 
         if (!animate) {
             bubbleIconView.setAlpha(1f);
