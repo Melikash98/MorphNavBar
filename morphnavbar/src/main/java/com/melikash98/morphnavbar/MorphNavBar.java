@@ -461,8 +461,8 @@ public class MorphNavBar extends View {
         blob.set(p1);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Path merged = new Path(blob);
-            merged.op(p2, Op.UNION);
-            merged.op(p3, Op.UNION);
+            merged.op(p2, Path.Op.UNION);
+            merged.op(p3, Path.Op.UNION);
             blob = merged;
         } else {
             blob.addPath(p2);
