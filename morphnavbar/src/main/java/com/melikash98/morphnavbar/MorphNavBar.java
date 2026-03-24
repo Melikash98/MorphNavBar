@@ -26,12 +26,15 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.widget.ImageViewCompat;
+import android.os.Build;
+import android.view.animation.Interpolator;
+import android.view.animation.PathInterpolator;
+import androidx.annotation.RequiresApi;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MorphNavBar extends FrameLayout {
-
     public interface OnTabSelectedListener {
         void onTabSelected(int index, MorphTabItem item);
     }
