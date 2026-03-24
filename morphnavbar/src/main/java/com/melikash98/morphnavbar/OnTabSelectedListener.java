@@ -6,5 +6,5 @@ import androidx.annotation.NonNull;
  * Callback for tab selection changes.
  */
 public interface OnTabSelectedListener {
-    void onTabSelected(int index, @NonNull TabItem item);
+    void onTabSelected(int index, @NonNull LiquidTabItem item);
 }

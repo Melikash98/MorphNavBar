@@ -2,10 +2,12 @@
 <resources>
     <declare-styleable name="LiquidBottomNavigationView">
         <attr name="lbv_barColor" format="color" />
-        <attr name="lbv_selectedColor" format="color" />
-        <attr name="lbv_unselectedColor" format="color" />
         <attr name="lbv_shadowColor" format="color" />
         <attr name="lbv_indicatorColor" format="color" />
+        <attr name="lbv_selectedColor" format="color" />
+        <attr name="lbv_unselectedColor" format="color" />
+        <attr name="lbv_activeIconColor" format="color" />
+        <attr name="lbv_inactiveIconColor" format="color" />
 
         <attr name="lbv_barRadius" format="dimension" />
         <attr name="lbv_barHeight" format="dimension" />
