@@ -64,8 +64,12 @@ public class MorphNavBar extends FrameLayout {
     private int shadowAlpha = 24;
 
     private float currentBubbleCenterX = -1f;
+    private float waveMorphFraction = 1f;
+    private int waveDirection = 1;
 
-    private ValueAnimator selectionAnimator;
+    private boolean firstLayoutDone = false;
+    private ValueAnimator bubbleMoveAnimator;
+    private ObjectAnimator waveMorphAnimator;
 
     public MorphNavBar(Context context) {
         this(context, null);
@@ -140,8 +144,6 @@ public class MorphNavBar extends FrameLayout {
         bubbleView = new FrameLayout(context);
         bubbleView.setClipChildren(false);
         bubbleView.setClipToPadding(false);
-        bubbleView.setPivotX(bubbleSizePx / 2f);
-        bubbleView.setPivotY(bubbleSizePx / 2f);
 
         GradientDrawable bubbleDrawable = new GradientDrawable();
         bubbleDrawable.setShape(GradientDrawable.OVAL);
@@ -155,9 +157,6 @@ public class MorphNavBar extends FrameLayout {
 
         bubbleIconView = new ImageView(context);
         bubbleIconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        bubbleIconView.setAlpha(0f);
-        bubbleIconView.setScaleX(0.88f);
-        bubbleIconView.setScaleY(0.88f);
         ImageViewCompat.setImageTintList(bubbleIconView, ColorStateList.valueOf(selectedIconColor));
 
         FrameLayout.LayoutParams bubbleIconLp = new FrameLayout.LayoutParams(iconSizePx, iconSizePx, Gravity.CENTER);
@@ -189,7 +188,8 @@ public class MorphNavBar extends FrameLayout {
         bubbleView.layout(0, 0, bubbleSizePx, bubbleSizePx);
 
         if (!items.isEmpty()) {
-            if (currentBubbleCenterX < 0f) {
+            if (!firstLayoutDone) {
+                firstLayoutDone = true;
                 post(() -> applySelection(selectedIndex, false, false));
             } else {
                 syncBubblePosition(false);
@@ -282,8 +282,6 @@ public class MorphNavBar extends FrameLayout {
         lp.width = px;
         lp.height = px;
         bubbleView.setLayoutParams(lp);
-        bubbleView.setPivotX(px / 2f);
-        bubbleView.setPivotY(px / 2f);
         requestLayout();
     }
 
@@ -333,6 +331,15 @@ public class MorphNavBar extends FrameLayout {
         backgroundView.invalidate();
     }
 
+    public float getWaveMorphFraction() {
+        return waveMorphFraction;
+    }
+
+    public void setWaveMorphFraction(float value) {
+        this.waveMorphFraction = value;
+        backgroundView.invalidate();
+    }
+
     private void applySelection(int index, boolean animate, boolean notify) {
         if (items.isEmpty()) return;
         if (index < 0 || index >= items.size()) return;
@@ -340,131 +347,29 @@ public class MorphNavBar extends FrameLayout {
         int oldIndex = selectedIndex;
         selectedIndex = index;
 
-        MorphTabItem item = items.get(index);
+        waveDirection = (index >= oldIndex) ? 1 : -1;
+
+        updateTabVisuals();
 
         if (bubbleView.getVisibility() != VISIBLE) {
             bubbleView.setVisibility(VISIBLE);
         }
 
+        MorphTabItem item = items.get(index);
+
         if (!animate) {
-            cancelAnimator();
-            updateTabVisuals();
-            bubbleView.setAlpha(1f);
-            bubbleView.setScaleX(1f);
-            bubbleView.setScaleY(1f);
-            bubbleView.setTranslationY(0f);
-
+            bubbleIconView.setAlpha(1f);
             bubbleIconView.setImageResource(item.iconRes);
             ImageViewCompat.setImageTintList(bubbleIconView, ColorStateList.valueOf(selectedIconColor));
-            bubbleIconView.setAlpha(1f);
-            bubbleIconView.setScaleX(1f);
-            bubbleIconView.setScaleY(1f);
-
             syncBubblePosition(false);
-            backgroundView.setWaveState(currentBubbleCenterX, 0f, 1);
-            backgroundView.invalidate();
-
-            if (notify && listener != null && oldIndex != index) {
-                listener.onTabSelected(index, item);
-            }
-            return;
+        } else {
+            animateBubbleToIndex(index);
+            animateBubbleIconChange(item.iconRes);
+            startWaveMorphAnimation();
         }
 
-        if (oldIndex == index && currentBubbleCenterX >= 0f) {
-            syncBubblePosition(true);
-            return;
-        }
-
-        if (oldIndex < 0 || oldIndex >= tabButtons.size()) {
-            cancelAnimator();
-            updateTabVisuals();
-            bubbleView.setVisibility(VISIBLE);
-            bubbleIconView.setImageResource(item.iconRes);
-            ImageViewCompat.setImageTintList(bubbleIconView, ColorStateList.valueOf(selectedIconColor));
-            bubbleIconView.setAlpha(1f);
-            bubbleIconView.setScaleX(1f);
-            bubbleIconView.setScaleY(1f);
-            syncBubblePosition(false);
-            backgroundView.setWaveState(currentBubbleCenterX, 0f, 1);
-            backgroundView.invalidate();
-            if (notify && listener != null) {
-                listener.onTabSelected(index, item);
-            }
-            return;
-        }
-
-        animateSelection(oldIndex, index, item, notify);
-    }
-
-    private void animateSelection(int oldIndex, int newIndex, MorphTabItem newItem, boolean notify) {
-        if (oldIndex < 0 || oldIndex >= tabButtons.size()) return;
-        if (newIndex < 0 || newIndex >= tabButtons.size()) return;
-
-        cancelAnimator();
-        updateTabVisuals();
-
-        View startView = tabButtons.get(oldIndex);
-        View endView = tabButtons.get(newIndex);
-
-        if (startView.getWidth() == 0 || endView.getWidth() == 0) {
-            post(() -> animateSelection(oldIndex, newIndex, newItem, notify));
-            return;
-        }
-
-        final float startX = startView.getLeft() + (startView.getWidth() / 2f);
-        final float endX = endView.getLeft() + (endView.getWidth() / 2f);
-
-        if (currentBubbleCenterX < 0f) {
-            currentBubbleCenterX = startX;
-        }
-
-        bubbleView.setVisibility(VISIBLE);
-        bubbleView.setAlpha(1f);
-
-        bubbleIconView.setImageResource(newItem.iconRes);
-        ImageViewCompat.setImageTintList(bubbleIconView, ColorStateList.valueOf(selectedIconColor));
-        bubbleIconView.setAlpha(0f);
-        bubbleIconView.setScaleX(0.84f);
-        bubbleIconView.setScaleY(0.84f);
-
-        final int direction = endX >= startX ? 1 : -1;
-        final float travelDistance = Math.abs(endX - startX);
-        final float maxTravel = Math.max(getWidth(), 1);
-
-        selectionAnimator = ValueAnimator.ofFloat(0f, 1f);
-        selectionAnimator.setDuration(animationDuration);
-        selectionAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-        selectionAnimator.addUpdateListener(animation -> {
-            float raw = (float) animation.getAnimatedValue();
-            float t = easeInOutCubic(raw);
-            float bell = 1f - Math.abs(2f * t - 1f);
-
-            currentBubbleCenterX = lerp(startX, endX, t);
-
-            float distanceFactor = clamp(travelDistance / maxTravel, 0f, 1f);
-            float stretchX = 1f + (0.20f * bell) + (0.06f * distanceFactor);
-            float squashY = 1f - (0.10f * bell) - (0.02f * distanceFactor);
-
-            float lift = -dp(getContext(), 4) * bell;
-
-            bubbleView.setTranslationX(currentBubbleCenterX - (bubbleSizePx / 2f));
-            bubbleView.setTranslationY(lift);
-            bubbleView.setScaleX(stretchX);
-            bubbleView.setScaleY(squashY);
-
-            float iconFadeIn = clamp((t - 0.10f) / 0.45f, 0f, 1f);
-            bubbleIconView.setAlpha(iconFadeIn);
-            bubbleIconView.setScaleX(0.84f + 0.16f * iconFadeIn);
-            bubbleIconView.setScaleY(0.84f + 0.16f * iconFadeIn);
-
-            backgroundView.setWaveState(currentBubbleCenterX, bell, direction);
-            backgroundView.invalidate();
-        });
-
-        selectionAnimator.start();
-
-        if (notify && listener != null && oldIndex != newIndex) {
-            listener.onTabSelected(newIndex, newItem);
+        if (notify && listener != null && oldIndex != index) {
+            listener.onTabSelected(index, item);
         }
     }
 
@@ -473,12 +378,13 @@ public class MorphNavBar extends FrameLayout {
             TabButton button = tabButtons.get(i);
             boolean selected = i == selectedIndex;
 
-            button.iconView.animate().cancel();
+            float alpha = selected ? 0f : 1f;
+            float scale = selected ? 0.80f : 1.0f;
 
             button.iconView.animate()
-                    .alpha(selected ? 0f : 1f)
-                    .scaleX(selected ? 0.78f : 1f)
-                    .scaleY(selected ? 0.78f : 1f)
+                    .alpha(alpha)
+                    .scaleX(scale)
+                    .scaleY(scale)
                     .setDuration(180)
                     .setInterpolator(new AccelerateDecelerateInterpolator())
                     .start();
@@ -488,6 +394,89 @@ public class MorphNavBar extends FrameLayout {
                     ColorStateList.valueOf(selected ? selectedIconColor : unselectedIconColor)
             );
         }
+    }
+
+    private void animateBubbleIconChange(int newIconRes) {
+        bubbleIconView.animate()
+                .alpha(0f)
+                .setDuration(animationDuration / 2L)
+                .withEndAction(() -> {
+                    bubbleIconView.setImageResource(newIconRes);
+                    ImageViewCompat.setImageTintList(bubbleIconView, ColorStateList.valueOf(selectedIconColor));
+                    bubbleIconView.animate()
+                            .alpha(1f)
+                            .setDuration(animationDuration / 2L)
+                            .start();
+                })
+                .start();
+    }
+
+    private void animateBubbleToIndex(int index) {
+        if (index < 0 || index >= tabButtons.size()) return;
+
+        View target = tabButtons.get(index);
+        if (target.getWidth() == 0) {
+            post(() -> animateBubbleToIndex(index));
+            return;
+        }
+
+        float targetCenterX = target.getLeft() + (target.getWidth() / 2f);
+
+        if (currentBubbleCenterX < 0) {
+            currentBubbleCenterX = targetCenterX;
+            bubbleView.setTranslationX(targetCenterX - (bubbleSizePx / 2f));
+            backgroundView.setWaveCenterX(targetCenterX);
+            return;
+        }
+
+        if (bubbleMoveAnimator != null) {
+            bubbleMoveAnimator.cancel();
+        }
+
+        bubbleMoveAnimator = ValueAnimator.ofFloat(currentBubbleCenterX, targetCenterX);
+        bubbleMoveAnimator.setDuration(animationDuration);
+        bubbleMoveAnimator.setInterpolator(new OvershootInterpolator(0.70f));
+
+        bubbleMoveAnimator.addUpdateListener(animation -> {
+            float value = (float) animation.getAnimatedValue();
+            currentBubbleCenterX = value;
+
+            bubbleView.setTranslationX(value - (bubbleSizePx / 2f));
+            backgroundView.setWaveCenterX(value);
+            backgroundView.invalidate();
+        });
+
+        bubbleMoveAnimator.start();
+
+        bubbleView.animate()
+                .scaleX(1.04f)
+                .scaleY(1.04f)
+                .setDuration(animationDuration / 2L)
+                .withEndAction(() -> bubbleView.animate()
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .setDuration(animationDuration / 2L)
+                        .start())
+                .start();
+    }
+
+    private void startWaveMorphAnimation() {
+        if (waveMorphAnimator != null) {
+            waveMorphAnimator.cancel();
+        }
+
+        PropertyValuesHolder holder = PropertyValuesHolder.ofKeyframe(
+                "waveMorphFraction",
+                Keyframe.ofFloat(0f, 0.82f),
+                Keyframe.ofFloat(0.25f, 1.26f),
+                Keyframe.ofFloat(0.60f, 0.98f),
+                Keyframe.ofFloat(1f, 1f)
+        );
+
+        waveMorphAnimator = ObjectAnimator.ofPropertyValuesHolder(this, holder);
+        waveMorphAnimator.setDuration(animationDuration);
+        waveMorphAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        waveMorphAnimator.start();
     }
 
     private void syncBubblePosition(boolean animate) {
@@ -501,39 +490,11 @@ public class MorphNavBar extends FrameLayout {
 
         float targetCenterX = target.getLeft() + (target.getWidth() / 2f);
         currentBubbleCenterX = targetCenterX;
-        backgroundView.setWaveState(targetCenterX, 0f, 1);
+        backgroundView.setWaveCenterX(targetCenterX);
 
         if (!animate) {
             bubbleView.setTranslationX(targetCenterX - (bubbleSizePx / 2f));
-            bubbleView.setTranslationY(0f);
-            bubbleView.setScaleX(1f);
-            bubbleView.setScaleY(1f);
-        } else {
-            bubbleView.animate().translationX(targetCenterX - (bubbleSizePx / 2f)).translationY(0f).setDuration(120).start();
         }
-    }
-
-    private void cancelAnimator() {
-        if (selectionAnimator != null) {
-            selectionAnimator.cancel();
-            selectionAnimator = null;
-        }
-    }
-
-    private float lerp(float start, float end, float t) {
-        return start + ((end - start) * t);
-    }
-
-    private float clamp(float value, float min, float max) {
-        return Math.max(min, Math.min(max, value));
-    }
-
-    private float easeInOutCubic(float t) {
-        if (t < 0.5f) {
-            return 4f * t * t * t;
-        }
-        float f = (-2f * t) + 2f;
-        return 1f - ((f * f * f) / 2f);
     }
 
     private int dp(Context context, float value) {
@@ -547,8 +508,6 @@ public class MorphNavBar extends FrameLayout {
         private final Path path = new Path();
 
         private float waveCenterX = -1f;
-        private float waveMorph = 0f;
-        private int waveDirection = 1;
 
         BackgroundView(Context context) {
             super(context);
@@ -556,10 +515,8 @@ public class MorphNavBar extends FrameLayout {
             setLayerType(LAYER_TYPE_SOFTWARE, null);
         }
 
-        void setWaveState(float x, float morph, int direction) {
+        void setWaveCenterX(float x) {
             this.waveCenterX = x;
-            this.waveMorph = morph;
-            this.waveDirection = direction == 0 ? 1 : direction;
         }
 
         @Override
@@ -579,21 +536,21 @@ public class MorphNavBar extends FrameLayout {
             float bottom = top + barHeightPx;
             float radius = barCornerRadiusPx;
 
-            if (waveCenterX < 0f) {
+            if (waveCenterX < 0) {
                 waveCenterX = w / 2f;
             }
 
-            float widthFactor = 0.86f + (0.18f * waveMorph);
-            float heightFactor = 0.80f + (0.32f * waveMorph);
+            float waveWidthScale = 0.86f + (0.18f * waveMorphFraction);
+            float waveHeightScale = 0.78f + (0.30f * waveMorphFraction);
 
-            float localWaveWidth = waveWidthPx * widthFactor;
-            float localWaveHeight = waveHeightPx * heightFactor;
+            float localWaveWidth = waveWidthPx * waveWidthScale;
+            float localWaveHeight = waveHeightPx * waveHeightScale;
 
-            float waveStart = clamp(waveCenterX - (localWaveWidth / 2f), radius, w - radius);
-            float waveEnd = clamp(waveCenterX + (localWaveWidth / 2f), radius, w - radius);
+            float waveStart = Math.max(radius, waveCenterX - (localWaveWidth / 2f));
+            float waveEnd = Math.min(w - radius, waveCenterX + (localWaveWidth / 2f));
             float wavePeakY = top - localWaveHeight;
 
-            float skew = waveDirection * localWaveWidth * 0.05f * (0.4f + (waveMorph * 0.6f));
+            float directionSkew = waveDirection * localWaveWidth * 0.05f * (1f - Math.abs(waveMorphFraction - 0.5f) * 2f);
 
             path.reset();
 
@@ -603,14 +560,14 @@ public class MorphNavBar extends FrameLayout {
             path.cubicTo(
                     waveStart + localWaveWidth * 0.16f,
                     top,
-                    waveCenterX - localWaveWidth * 0.14f + skew,
+                    waveCenterX - localWaveWidth * 0.14f + directionSkew,
                     wavePeakY,
                     waveCenterX,
                     wavePeakY
             );
 
             path.cubicTo(
-                    waveCenterX + localWaveWidth * 0.14f + skew,
+                    waveCenterX + localWaveWidth * 0.14f + directionSkew,
                     wavePeakY,
                     waveEnd - localWaveWidth * 0.16f,
                     top,
