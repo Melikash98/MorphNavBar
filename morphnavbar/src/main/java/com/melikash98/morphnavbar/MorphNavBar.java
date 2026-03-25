@@ -84,8 +84,8 @@ public class MorphNavBar extends View {
     private int animationDuration;
 
     private float bubbleCenterY;
-    private float inactiveIconY;   // ← آیکون‌های غیرفعال پایین‌تر
-    private float activeIconY;     // ← آیکون فعال دقیقاً داخل حباب
+    private float inactiveIconY;   // آیکون‌های غیرفعال = وسط نوار + فاصله از پایین
+    private float activeIconY;     // آیکون فعال = دقیقاً داخل حباب
 
     public MorphNavBar(@NonNull Context context) {
         this(context, null);
@@ -120,8 +120,8 @@ public class MorphNavBar extends View {
         barHeight = dp(72f);
         barSideMargin = dp(24f);
         barBottomMargin = dp(24f);
-        bubbleDiameter = dp(64f);      // بزرگ‌تر برای حباب بهتر
-        itemIconSize = dp(28f);        // آیکون‌ها حالا بزرگ و خوانا
+        bubbleDiameter = dp(64f);
+        itemIconSize = dp(28f);        // آیکون‌ها بزرگ و خوانا
         shadowBlur = dp(12f);
         shadowDy = dp(4f);
         animationDuration = DEFAULT_ANIMATION_DURATION;
@@ -249,33 +249,11 @@ public class MorphNavBar extends View {
         this.listener = listener;
     }
 
-    public void setBarColor(@ColorInt int color) {
-        barColor = color;
-        barPaint.setColor(color);
-        invalidate();
-    }
-
-    public void setSelectedColor(@ColorInt int color) {
-        selectedColor = color;
-        bubblePaint.setColor(color);
-        invalidate();
-    }
-
-    public void setInactiveIconColor(@ColorInt int color) {
-        inactiveIconColor = color;
-        inactiveIconPaint.setColor(color);
-        invalidate();
-    }
-
-    public void setActiveIconColor(@ColorInt int color) {
-        activeIconColor = color;
-        activeIconPaint.setColor(color);
-        invalidate();
-    }
-
-    public void setAnimationDuration(int duration) {
-        this.animationDuration = Math.max(1, duration);
-    }
+    public void setBarColor(@ColorInt int color) { barColor = color; barPaint.setColor(color); invalidate(); }
+    public void setSelectedColor(@ColorInt int color) { selectedColor = color; bubblePaint.setColor(color); invalidate(); }
+    public void setInactiveIconColor(@ColorInt int color) { inactiveIconColor = color; inactiveIconPaint.setColor(color); invalidate(); }
+    public void setActiveIconColor(@ColorInt int color) { activeIconColor = color; activeIconPaint.setColor(color); invalidate(); }
+    public void setAnimationDuration(int duration) { this.animationDuration = Math.max(1, duration); }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -293,10 +271,9 @@ public class MorphNavBar extends View {
         float top = bottom - barHeight;
         barRect.set(left, top, right, bottom);
 
-        // موقعیت دقیق حباب و آیکون‌ها
         bubbleCenterY = top + bubbleDiameter * 0.36f;
-        activeIconY = bubbleCenterY;                    // آیکون فعال داخل حباب
-        inactiveIconY = top + barHeight * 0.68f;        // آیکون‌های غیرفعال پایین‌تر (در نوار)
+        activeIconY = bubbleCenterY;                    // داخل حباب
+        inactiveIconY = top + barHeight * 0.5f;         // ← وسط نوار + فاصله از پایین (درخواست شما)
 
         rebuildCenters();
     }
@@ -322,7 +299,7 @@ public class MorphNavBar extends View {
         drawShadow(canvas, bubbleX, eased);
         drawBar(canvas, bubbleX, eased);
         drawInactiveIcons(canvas, bubbleX);
-        drawBubble(canvas, bubbleX, eased);
+        drawBubble(canvas, bubbleX, eased);   // ← حباب مایع + حالت کشیده شدن
         drawActiveIcon(canvas, bubbleX, eased);
     }
 
@@ -345,10 +322,8 @@ public class MorphNavBar extends View {
         float bulgeDepth = dp(9f) + dp(4.5f) * pulse;
         float bumpWidth = bubbleDiameter * 1.38f;
 
-        // اصلاح مهم: نیم‌دایره در اولین و آخرین آیتم دیگر خراب نمی‌شود
         float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
         float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
-
         float bulgeTop = top - bulgeDepth;
 
         path.moveTo(left + radius, top);
@@ -384,17 +359,9 @@ public class MorphNavBar extends View {
             float eased = positionInterpolator.getInterpolation(t);
 
             float inactiveAlpha = 1f - 0.88f * eased;
-            float activeAlpha = 0.95f * eased;
 
-            Drawable base = item.getIcon();
-            Drawable selected = item.getSelectedIcon();
-
-            if (selected == null) {
-                drawDrawable(canvas, base, centerX, inactiveIconY, inactiveIconColor, inactiveAlpha);
-            } else {
-                drawDrawable(canvas, base, centerX, inactiveIconY, inactiveIconColor, inactiveAlpha);
-                drawDrawable(canvas, selected, centerX, inactiveIconY, activeIconColor, activeAlpha);
-            }
+            // فقط آیکون حالت غیرفعال (base) — آیکون انتخاب‌شده زیرش حذف شد
+            drawDrawable(canvas, item.getIcon(), centerX, inactiveIconY, inactiveIconColor, inactiveAlpha);
         }
     }
 
@@ -402,14 +369,18 @@ public class MorphNavBar extends View {
         float r = bubbleDiameter / 2f;
         float pulse = (float) Math.sin(Math.PI * eased);
 
-        float mainRadius = r * (0.97f - 0.03f * pulse);
-        float crestRadius = r * (0.48f + 0.14f * pulse);
+        // حالت کشیده شدن و تبدیل به مایع (blob) دقیقاً مثل ویدیو اصلی
+        float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased); // کشیده شدن افقی در وسط انیمیشن
+        float mainRadiusX = r * stretchFactor * (0.97f - 0.03f * pulse);
+        float mainRadiusY = r * (0.97f - 0.03f * pulse);
 
         float mainY = bubbleCenterY + dp(1.8f);
+        float crestRadius = r * (0.48f + 0.14f * pulse);
         float crestY = bubbleCenterY - r * (0.34f + 0.07f * pulse);
 
         Path main = new Path();
-        main.addCircle(bubbleX, mainY, mainRadius, Path.Direction.CW);
+        main.addOval(bubbleX - mainRadiusX, mainY - mainRadiusY,
+                bubbleX + mainRadiusX, mainY + mainRadiusY, Path.Direction.CW);
 
         Path crest = new Path();
         crest.addCircle(bubbleX, crestY, crestRadius, Path.Direction.CW);
@@ -424,6 +395,7 @@ public class MorphNavBar extends View {
 
         canvas.drawPath(bubblePath, bubblePaint);
 
+        // highlight الاستیک برای حس مایع بودن
         if (eased > 0.05f && eased < 0.95f) {
             float highlightRadius = r * 0.21f * pulse;
             canvas.drawCircle(bubbleX, crestY - highlightRadius * 0.22f, highlightRadius, bubblePaint);
@@ -437,12 +409,8 @@ public class MorphNavBar extends View {
         LiquidTabItem item = items.get(iconIndex);
         float scale = 1f + 0.085f * (float) Math.sin(Math.PI * eased);
 
-        Drawable selected = item.getSelectedIcon();
-        if (selected != null) {
-            drawDrawable(canvas, selected, bubbleX, activeIconY, activeIconColor, 1f, scale);
-        } else {
-            drawDrawable(canvas, item.getIcon(), bubbleX, activeIconY, activeIconColor, 1f, scale);
-        }
+        Drawable iconToDraw = item.getSelectedIcon() != null ? item.getSelectedIcon() : item.getIcon();
+        drawDrawable(canvas, iconToDraw, bubbleX, activeIconY, activeIconColor, 1f, scale);
     }
 
     // متد کوتاه (بدون scale)
