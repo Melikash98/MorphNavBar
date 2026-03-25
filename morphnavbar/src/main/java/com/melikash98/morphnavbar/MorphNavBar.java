@@ -116,15 +116,14 @@ public class MorphNavBar extends View {
         inactiveIconColor = Color.parseColor("#00CFC0");
         activeIconColor = Color.WHITE;
 
-        // سایزها دقیقاً طبق dimens.xml شما (بزرگ‌تر از قبل)
-        barRadius = dp(22f);
-        barHeight = dp(80f);
-        barSideMargin = dp(36f);
-        barBottomMargin = dp(34f);
-        bubbleDiameter = dp(72f);
+        barRadius = dp(26f);
+        barHeight = dp(72f);
+        barSideMargin = dp(24f);
+        barBottomMargin = dp(24f);
+        bubbleDiameter = dp(92f);
         itemIconSize = dp(34f);
-        shadowBlur = dp(16f);
-        shadowDy = dp(6f);
+        shadowBlur = dp(12f);
+        shadowDy = dp(4f);
         animationDuration = DEFAULT_ANIMATION_DURATION;
     }
 
