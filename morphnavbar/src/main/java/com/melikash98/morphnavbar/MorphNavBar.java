@@ -37,6 +37,7 @@ import androidx.core.widget.ImageViewCompat;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -56,6 +57,7 @@ public class MorphNavBar extends View {
     private final Path bubblePath = new Path();
 
     private final List<LiquidTabItem> items = new ArrayList<>();
+    private final List<CharSequence> tabLabels = new ArrayList<>();
     private final List<Float> centerXs = new ArrayList<>();
 
     private final FastOutSlowInInterpolator positionInterpolator = new FastOutSlowInInterpolator();
@@ -118,9 +120,11 @@ public class MorphNavBar extends View {
 
     private void initDefaults() {
         barColor = Color.WHITE;
+
         showLabels = true;
         labelInactiveColor = inactiveIconColor;
         labelActiveColor = selectedColor;
+
         shadowColor = Color.parseColor("#22000000");
         selectedColor = Color.parseColor("#00CFC0");
         inactiveIconColor = Color.parseColor("#00CFC0");
@@ -192,6 +196,9 @@ public class MorphNavBar extends View {
     public void setTabs(@NonNull List<LiquidTabItem> tabs) {
         items.clear();
         items.addAll(tabs);
+        tabLabels.clear();
+        for (int i = 0; i < items.size(); i++) tabLabels.add(null);
+
         if (selectedIndex >= items.size()) selectedIndex = 0;
         fromIndex = selectedIndex;
         toIndex = selectedIndex;
@@ -204,11 +211,46 @@ public class MorphNavBar extends View {
     public void setTabs(@NonNull LiquidTabItem... tabs) {
         items.clear();
         Collections.addAll(items, tabs);
+        tabLabels.clear();
+        for (int i = 0; i < items.size(); i++) tabLabels.add(null);
+
         if (selectedIndex >= items.size()) selectedIndex = 0;
         fromIndex = selectedIndex;
         toIndex = selectedIndex;
         progress = 1f;
         rebuildCenters();
+        requestLayout();
+        invalidate();
+    }
+
+    public void setTabLabels(@NonNull List<CharSequence> labels) {
+        tabLabels.clear();
+        tabLabels.addAll(labels);
+        while (tabLabels.size() < items.size()) tabLabels.add(null);
+        if (tabLabels.size() > items.size()) {
+            tabLabels.subList(items.size(), tabLabels.size()).clear();
+        }
+        invalidate();
+    }
+
+    public void setTabLabels(@NonNull CharSequence... labels) {
+        setTabLabels(Arrays.asList(labels));
+    }
+
+    public void setTabLabel(int index, @Nullable CharSequence label) {
+        if (index >= 0 && index < tabLabels.size()) {
+            tabLabels.set(index, label);
+            invalidate();
+        }
+    }
+
+    @Nullable
+    public CharSequence getTabLabel(int index) {
+        return (index >= 0 && index < tabLabels.size()) ? tabLabels.get(index) : null;
+    }
+
+    public void setShowLabels(boolean show) {
+        this.showLabels = show;
         requestLayout();
         invalidate();
     }
@@ -231,7 +273,12 @@ public class MorphNavBar extends View {
             fromIndex = index;
             toIndex = index;
             progress = 1f;
-            if (listener != null) listener.onTabSelected(index, items.get(index));
+            if (listener != null) {
+                listener.onTabSelected(selectedIndex, items.get(selectedIndex));
+            }
+            if (withLabelListener != null) {
+                withLabelListener.onTabSelected(selectedIndex, items.get(selectedIndex), getTabLabel(selectedIndex));
+            }
             invalidate();
             return;
         }
@@ -253,7 +300,12 @@ public class MorphNavBar extends View {
                 selectedIndex = toIndex;
                 fromIndex = selectedIndex;
                 progress = 1f;
-                if (listener != null) listener.onTabSelected(selectedIndex, items.get(selectedIndex));
+                if (listener != null) {
+                    listener.onTabSelected(selectedIndex, items.get(selectedIndex));
+                }
+                if (withLabelListener != null) {
+                    withLabelListener.onTabSelected(selectedIndex, items.get(selectedIndex), getTabLabel(selectedIndex));
+                }
                 invalidate();
             }
         });
@@ -263,19 +315,46 @@ public class MorphNavBar extends View {
     public void setOnTabSelectedListener(@Nullable OnTabSelectedListener listener) {
         this.listener = listener;
     }
+
     public void setOnTabSelectedWithLabelListener(@Nullable OnTabSelectedWithLabelListener listener) {
         this.withLabelListener = listener;
     }
-    public void setBarColor(@ColorInt int color) { barColor = color; barPaint.setColor(color); invalidate(); }
-    public void setSelectedColor(@ColorInt int color) { selectedColor = color; bubblePaint.setColor(color); invalidate(); }
-    public void setInactiveIconColor(@ColorInt int color) { inactiveIconColor = color; inactiveIconPaint.setColor(color); invalidate(); }
-    public void setActiveIconColor(@ColorInt int color) { activeIconColor = color; activeIconPaint.setColor(color); invalidate(); }
-    public void setAnimationDuration(int duration) { this.animationDuration = Math.max(1, duration); }
+
+    public void setBarColor(@ColorInt int color) {
+        barColor = color;
+        barPaint.setColor(color);
+        labelActiveColor = color;
+        invalidate();
+    }
+
+    public void setSelectedColor(@ColorInt int color) {
+        selectedColor = color;
+        bubblePaint.setColor(color);
+        labelInactiveColor = color;
+        invalidate();
+    }
+
+    public void setInactiveIconColor(@ColorInt int color) {
+        inactiveIconColor = color;
+        inactiveIconPaint.setColor(color);
+        invalidate();
+    }
+
+    public void setActiveIconColor(@ColorInt int color) {
+        activeIconColor = color;
+        activeIconPaint.setColor(color);
+        invalidate();
+    }
+
+    public void setAnimationDuration(int duration) {
+        this.animationDuration = Math.max(1, duration);
+    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        float labelExtra = showLabels ? dp(22f) : 0f;
         int desiredWidth = (int) Math.ceil(getPaddingLeft() + getPaddingRight() + dp(360));
-        int desiredHeight = (int) Math.ceil(getPaddingTop() + getPaddingBottom() + barHeight + bubbleDiameter * 0.3f + barBottomMargin);
+        int desiredHeight = (int) Math.ceil(getPaddingTop() + getPaddingBottom() + barHeight + bubbleDiameter * 0.3f + barBottomMargin + labelExtra);
         setMeasuredDimension(resolveSize(desiredWidth, widthMeasureSpec), resolveSize(desiredHeight, heightMeasureSpec));
     }
 
@@ -289,8 +368,10 @@ public class MorphNavBar extends View {
         barRect.set(left, top, right, bottom);
 
         bubbleCenterY = top + bubbleDiameter * 0.5f;
-        activeIconY = bubbleCenterY;                    // داخل حباب
-        inactiveIconY = bubbleCenterY;         // ← وسط نوار + فاصله از پایین (درخواست شما)
+        activeIconY = bubbleCenterY;
+        inactiveIconY = bubbleCenterY;
+
+        labelBaselineY = barRect.bottom + dp(18f);
 
         rebuildCenters();
     }
@@ -316,10 +397,35 @@ public class MorphNavBar extends View {
         drawShadow(canvas, bubbleX, eased);
         drawBar(canvas, bubbleX, eased);
         drawInactiveIcons(canvas, bubbleX);
-        drawBubble(canvas, bubbleX, eased);   // ← حباب مایع + حالت کشیده شدن
+        drawBubble(canvas, bubbleX, eased);
         drawActiveIcon(canvas, bubbleX, eased);
-    }
 
+        drawLabels(canvas, bubbleX);
+    }
+    private void drawLabels(Canvas canvas, float bubbleX) {
+        if (!showLabels || items.isEmpty()) return;
+
+        float eased = positionInterpolator.getInterpolation(progress);
+        int activeIndex = eased < 0.5f ? fromIndex : toIndex;
+        float influenceRadius = bubbleDiameter * 0.9f;
+
+        for (int i = 0; i < items.size(); i++) {
+            CharSequence text = (i < tabLabels.size()) ? tabLabels.get(i) : null;
+            if (text == null || text.length() == 0) continue;
+
+            float centerX = centerXs.get(i);
+            boolean isActive = (i == activeIndex);
+
+            labelPaint.setColor(isActive ? labelActiveColor : labelInactiveColor);
+
+            float distance = Math.abs(centerX - bubbleX);
+            float t = clamp(1f - (distance / influenceRadius), 0f, 1f);
+            float alphaFactor = isActive ? 1f : (1f - 0.4f * t);
+            labelPaint.setAlpha((int) (255f * alphaFactor));
+
+            canvas.drawText(text.toString(), centerX, labelBaselineY, labelPaint);
+        }
+    }
     private void drawShadow(Canvas canvas, float bubbleX, float eased) {
         shadowPaint.setShadowLayer(shadowBlur, 0f, shadowDy, shadowColor);
         canvas.drawPath(buildBarPath(bubbleX, eased), shadowPaint);
