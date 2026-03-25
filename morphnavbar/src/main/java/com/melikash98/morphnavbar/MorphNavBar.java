@@ -120,7 +120,7 @@ public class MorphNavBar extends View {
         barHeight = dp(72f);
         barSideMargin = dp(24f);
         barBottomMargin = dp(24f);
-        bubbleDiameter = dp(92f);
+        bubbleDiameter = dp(64f);
         itemIconSize = dp(38f);
         shadowBlur = dp(12f);
         shadowDy = dp(4f);
@@ -271,7 +271,7 @@ public class MorphNavBar extends View {
         float top = bottom - barHeight;
         barRect.set(left, top, right, bottom);
 
-        bubbleCenterY = top + bubbleDiameter * 0.4f;
+        bubbleCenterY = top + bubbleDiameter * 0.36f;
         activeIconY = bubbleCenterY;
         inactiveIconY = top + barHeight * 0.5f;
 
@@ -319,8 +319,8 @@ public class MorphNavBar extends View {
         float radius = barRadius;
 
         float pulse = (float) Math.sin(Math.PI * eased);
-        float bulgeDepth = dp(18f) + dp(10f) * pulse;
-        float bumpWidth = bubbleDiameter * 1.7f;
+        float bulgeDepth = dp(9f) + dp(4.5f) * pulse;
+        float bumpWidth = bubbleDiameter * 1.38f;
 
         float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
         float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
@@ -329,11 +329,11 @@ public class MorphNavBar extends View {
         path.moveTo(left + radius, top);
         path.lineTo(bumpLeft, top);
 
-        path.cubicTo(bumpLeft + bumpWidth * 0.35f, top,
-                bubbleX - bumpWidth * 0.3f, bulgeTop - dp(4f) * pulse,
+        path.cubicTo(bumpLeft + bumpWidth * 0.25f, top,
+                bubbleX - bumpWidth * 0.19f, bulgeTop,
                 bubbleX, bulgeTop);
-        path.cubicTo(bubbleX + bumpWidth * 0.3f, bulgeTop - dp(4f) * pulse,
-                bumpRight - bumpWidth * 0.35f, top,
+        path.cubicTo(bubbleX + bumpWidth * 0.19f, bulgeTop,
+                bumpRight - bumpWidth * 0.25f, top,
                 bumpRight, top);
 
         path.lineTo(right - radius, top);
@@ -349,18 +349,18 @@ public class MorphNavBar extends View {
     }
 
     private void drawInactiveIcons(Canvas canvas, float bubbleX) {
-        float influenceRadius = bubbleDiameter * 1.1f;
+        float influenceRadius = bubbleDiameter * 0.9f;
 
         for (int i = 0; i < items.size(); i++) {
             LiquidTabItem item = items.get(i);
             float centerX = centerXs.get(i);
             float distance = Math.abs(centerX - bubbleX);
             float t = clamp(1f - (distance / influenceRadius), 0f, 1f);
-            float easedT = positionInterpolator.getInterpolation(t);
+            float eased = positionInterpolator.getInterpolation(t);
 
-            float alpha = 1f - easedT * 0.9f;
+            float inactiveAlpha = 1f - 0.88f * eased;
 
-            drawDrawable(canvas, item.getIcon(), centerX, inactiveIconY, inactiveIconColor, alpha);
+            drawDrawable(canvas, item.getIcon(), centerX, inactiveIconY, inactiveIconColor, inactiveAlpha);
         }
     }
 
@@ -368,13 +368,13 @@ public class MorphNavBar extends View {
         float r = bubbleDiameter / 2f;
         float pulse = (float) Math.sin(Math.PI * eased);
 
-        float stretchFactor = 1f + 0.5f * (float) Math.sin(Math.PI * eased);
-        float mainRadiusX = r * stretchFactor * (1.05f - 0.08f * pulse);
-        float mainRadiusY = r * (0.85f - 0.1f * pulse);
+        float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased);
+        float mainRadiusX = r * stretchFactor * (0.97f - 0.03f * pulse);
+        float mainRadiusY = r * (0.97f - 0.03f * pulse);
 
-        float mainY = bubbleCenterY + dp(5f);
-        float crestRadius = r * (0.45f + 0.15f * pulse);
-        float crestY = bubbleCenterY - r * 0.55f - dp(6f) * pulse;
+        float mainY = bubbleCenterY + dp(1.8f);
+        float crestRadius = r * (0.48f + 0.14f * pulse);
+        float crestY = bubbleCenterY - r * (0.34f + 0.07f * pulse);
 
         Path main = new Path();
         main.addOval(bubbleX - mainRadiusX, mainY - mainRadiusY,
@@ -393,9 +393,9 @@ public class MorphNavBar extends View {
 
         canvas.drawPath(bubblePath, bubblePaint);
 
-        if (eased > 0.1f && eased < 0.9f) {
-            float highlightRadius = r * 0.28f * pulse;
-            canvas.drawCircle(bubbleX, crestY - highlightRadius * 0.3f, highlightRadius, bubblePaint);
+        if (eased > 0.05f && eased < 0.95f) {
+            float highlightRadius = r * 0.21f * pulse;
+            canvas.drawCircle(bubbleX, crestY - highlightRadius * 0.22f, highlightRadius, bubblePaint);
         }
     }
 
@@ -404,15 +404,10 @@ public class MorphNavBar extends View {
         if (iconIndex < 0 || iconIndex >= items.size()) return;
 
         LiquidTabItem item = items.get(iconIndex);
-        float scale = 1f + 0.15f * (float) Math.sin(Math.PI * eased);
-
-
-        float shakeIntensity = 1f - eased;
-        float shakeX = (float) Math.sin(eased * Math.PI * 40) * 8f * shakeIntensity;
-        float shakeY = (float) Math.cos(eased * Math.PI * 30) * 5f * shakeIntensity;
+        float scale = 1f + 0.085f * (float) Math.sin(Math.PI * eased);
 
         Drawable iconToDraw = item.getSelectedIcon() != null ? item.getSelectedIcon() : item.getIcon();
-        drawDrawable(canvas, iconToDraw, bubbleX + shakeX, activeIconY + shakeY, activeIconColor, 1f, scale);
+        drawDrawable(canvas, iconToDraw, bubbleX, activeIconY, activeIconColor, 1f, scale);
     }
 
     private void drawDrawable(Canvas canvas,
