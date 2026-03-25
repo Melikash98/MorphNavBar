@@ -271,9 +271,9 @@ public class MorphNavBar extends View {
         float top = bottom - barHeight;
         barRect.set(left, top, right, bottom);
 
-        bubbleCenterY = top + bubbleDiameter * 0.36f;
+        bubbleCenterY = top + bubbleDiameter * 0.5f;
         activeIconY = bubbleCenterY;                    // داخل حباب
-        inactiveIconY = top + barHeight * 0.5f;         // ← وسط نوار + فاصله از پایین (درخواست شما)
+        inactiveIconY = bubbleCenterY;         // ← وسط نوار + فاصله از پایین (درخواست شما)
 
         rebuildCenters();
     }
@@ -372,10 +372,10 @@ public class MorphNavBar extends View {
         // حالت کشیده شدن و تبدیل به مایع (blob) دقیقاً مثل ویدیو اصلی
         float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased); // کشیده شدن افقی در وسط انیمیشن
         float mainRadiusX = r * stretchFactor * (0.97f - 0.03f * pulse);
-        float mainRadiusY = r * (0.78f - 0.03f * pulse);
+        float mainRadiusY = r * (0.97f - 0.03f * pulse);
 
         float mainY = bubbleCenterY + dp(1.8f);
-        float crestRadius = r * (0.38f + 0.10f * pulse);
+        float crestRadius = r * (0.48f + 0.14f * pulse);
         float crestY = bubbleCenterY - r * (0.34f + 0.07f * pulse);
 
         Path main = new Path();
