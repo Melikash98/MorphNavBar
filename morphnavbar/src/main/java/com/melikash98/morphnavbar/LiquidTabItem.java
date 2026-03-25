@@ -35,7 +35,8 @@ public final class LiquidTabItem {
     }
 
     @NonNull
-    public static LiquidTabItem of(@NonNull Drawable icon, @NonNull Drawable selectedIcon,
+    public static LiquidTabItem of(@NonNull Drawable icon,
+                                   @NonNull Drawable selectedIcon,
                                    @Nullable CharSequence contentDescription) {
         return new LiquidTabItem(icon, selectedIcon, contentDescription);
     }
