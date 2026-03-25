@@ -49,6 +49,7 @@ public class MorphNavBar extends View {
     private final Paint bubblePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint inactiveIconPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint activeIconPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint labelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private final RectF barRect = new RectF();
     private final Path barPath = new Path();
@@ -61,6 +62,7 @@ public class MorphNavBar extends View {
 
     private ValueAnimator animator;
     private OnTabSelectedListener listener;
+    private OnTabSelectedWithLabelListener withLabelListener;
 
     private int selectedIndex = 0;
     private int fromIndex = 0;
@@ -84,8 +86,13 @@ public class MorphNavBar extends View {
     private int animationDuration;
 
     private float bubbleCenterY;
-    private float inactiveIconY;   // آیکون‌های غیرفعال = وسط نوار + فاصله از پایین
-    private float activeIconY;     // آیکون فعال = دقیقاً داخل حباب
+    private float inactiveIconY;
+    private float activeIconY;
+
+    private boolean showLabels;
+    private int labelInactiveColor;
+    private int labelActiveColor;
+    private float labelBaselineY;
 
     public MorphNavBar(@NonNull Context context) {
         this(context, null);
@@ -111,6 +118,9 @@ public class MorphNavBar extends View {
 
     private void initDefaults() {
         barColor = Color.WHITE;
+        showLabels = true;
+        labelInactiveColor = inactiveIconColor;
+        labelActiveColor = selectedColor;
         shadowColor = Color.parseColor("#22000000");
         selectedColor = Color.parseColor("#00CFC0");
         inactiveIconColor = Color.parseColor("#00CFC0");
@@ -137,6 +147,7 @@ public class MorphNavBar extends View {
             inactiveIconColor = a.getColor(R.styleable.LiquidBottomNavigationView_lbv_inactiveIconColor, inactiveIconColor);
             activeIconColor = a.getColor(R.styleable.LiquidBottomNavigationView_lbv_activeIconColor, activeIconColor);
 
+            showLabels = a.getBoolean(R.styleable.LiquidBottomNavigationView_lbv_showLabels, showLabels);
             barRadius = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_barRadius, barRadius);
             barHeight = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_barHeight, barHeight);
             barSideMargin = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_barSideMargin, barSideMargin);
@@ -172,6 +183,10 @@ public class MorphNavBar extends View {
         activeIconPaint.setStrokeJoin(Paint.Join.ROUND);
         activeIconPaint.setStrokeWidth(dp(1.9f));
         activeIconPaint.setColor(activeIconColor);
+
+        labelPaint.setStyle(Paint.Style.FILL);
+        labelPaint.setTextAlign(Paint.Align.CENTER);
+        labelPaint.setTextSize(dp(12f));
     }
 
     public void setTabs(@NonNull List<LiquidTabItem> tabs) {
@@ -248,7 +263,9 @@ public class MorphNavBar extends View {
     public void setOnTabSelectedListener(@Nullable OnTabSelectedListener listener) {
         this.listener = listener;
     }
-
+    public void setOnTabSelectedWithLabelListener(@Nullable OnTabSelectedWithLabelListener listener) {
+        this.withLabelListener = listener;
+    }
     public void setBarColor(@ColorInt int color) { barColor = color; barPaint.setColor(color); invalidate(); }
     public void setSelectedColor(@ColorInt int color) { selectedColor = color; bubblePaint.setColor(color); invalidate(); }
     public void setInactiveIconColor(@ColorInt int color) { inactiveIconColor = color; inactiveIconPaint.setColor(color); invalidate(); }
