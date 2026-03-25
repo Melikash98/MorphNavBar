@@ -84,6 +84,8 @@ public class MorphNavBar extends View {
     private int animationDuration;
 
     private float bubbleCenterY;
+    private float inactiveIconY;   // ← آیکون‌های غیرفعال پایین‌تر
+    private float activeIconY;     // ← آیکون فعال دقیقاً داخل حباب
 
     public MorphNavBar(@NonNull Context context) {
         this(context, null);
@@ -118,8 +120,8 @@ public class MorphNavBar extends View {
         barHeight = dp(72f);
         barSideMargin = dp(24f);
         barBottomMargin = dp(24f);
-        bubbleDiameter = dp(62f);
-        itemIconSize = dp(26f);
+        bubbleDiameter = dp(64f);      // بزرگ‌تر برای حباب بهتر
+        itemIconSize = dp(28f);        // آیکون‌ها حالا بزرگ و خوانا
         shadowBlur = dp(12f);
         shadowDy = dp(4f);
         animationDuration = DEFAULT_ANIMATION_DURATION;
@@ -290,7 +292,12 @@ public class MorphNavBar extends View {
         float bottom = h - getPaddingBottom() - barBottomMargin;
         float top = bottom - barHeight;
         barRect.set(left, top, right, bottom);
-        bubbleCenterY = top + bubbleDiameter * 0.38f;
+
+        // موقعیت دقیق حباب و آیکون‌ها
+        bubbleCenterY = top + bubbleDiameter * 0.36f;
+        activeIconY = bubbleCenterY;                    // آیکون فعال داخل حباب
+        inactiveIconY = top + barHeight * 0.68f;        // آیکون‌های غیرفعال پایین‌تر (در نوار)
+
         rebuildCenters();
     }
 
@@ -338,8 +345,10 @@ public class MorphNavBar extends View {
         float bulgeDepth = dp(9f) + dp(4.5f) * pulse;
         float bumpWidth = bubbleDiameter * 1.38f;
 
-        float bumpLeft = clamp(bubbleX - bumpWidth / 2f, left + radius, right - radius - bumpWidth);
-        float bumpRight = bumpLeft + bumpWidth;
+        // اصلاح مهم: نیم‌دایره در اولین و آخرین آیتم دیگر خراب نمی‌شود
+        float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
+        float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
+
         float bulgeTop = top - bulgeDepth;
 
         path.moveTo(left + radius, top);
@@ -381,10 +390,10 @@ public class MorphNavBar extends View {
             Drawable selected = item.getSelectedIcon();
 
             if (selected == null) {
-                drawDrawable(canvas, base, centerX, bubbleCenterY, inactiveIconColor, inactiveAlpha);
+                drawDrawable(canvas, base, centerX, inactiveIconY, inactiveIconColor, inactiveAlpha);
             } else {
-                drawDrawable(canvas, base, centerX, bubbleCenterY, inactiveIconColor, inactiveAlpha);
-                drawDrawable(canvas, selected, centerX, bubbleCenterY, activeIconColor, activeAlpha);
+                drawDrawable(canvas, base, centerX, inactiveIconY, inactiveIconColor, inactiveAlpha);
+                drawDrawable(canvas, selected, centerX, inactiveIconY, activeIconColor, activeAlpha);
             }
         }
     }
@@ -430,13 +439,13 @@ public class MorphNavBar extends View {
 
         Drawable selected = item.getSelectedIcon();
         if (selected != null) {
-            drawDrawable(canvas, selected, bubbleX, bubbleCenterY, activeIconColor, 1f, scale);
+            drawDrawable(canvas, selected, bubbleX, activeIconY, activeIconColor, 1f, scale);
         } else {
-            drawDrawable(canvas, item.getIcon(), bubbleX, bubbleCenterY, activeIconColor, 1f, scale);
+            drawDrawable(canvas, item.getIcon(), bubbleX, activeIconY, activeIconColor, 1f, scale);
         }
     }
 
-    // متد کوتاه (بدون scale) — برای آیکون‌های غیرفعال
+    // متد کوتاه (بدون scale)
     private void drawDrawable(Canvas canvas,
                               @NonNull Drawable drawable,
                               float centerX,
@@ -446,7 +455,7 @@ public class MorphNavBar extends View {
         drawDrawable(canvas, drawable, centerX, centerY, tint, alpha, 1f);
     }
 
-    // متد کامل (با scale) — برای آیکون فعال
+    // متد کامل (با scale)
     private void drawDrawable(Canvas canvas,
                               @NonNull Drawable drawable,
                               float centerX,
