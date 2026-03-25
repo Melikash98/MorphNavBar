@@ -40,15 +40,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * A reusable liquid bottom navigation bar for Android.
- *
- * The view is fully data-driven:
- * - icons are supplied by the consumer
- * - the active state may use a separate selected drawable
- * - the bar morphs upward under the active tab
- * - the moving bubble is drawn as a real animated blob
- */
 
 public class MorphNavBar extends View {
     private static final int DEFAULT_ANIMATION_DURATION = 300;
