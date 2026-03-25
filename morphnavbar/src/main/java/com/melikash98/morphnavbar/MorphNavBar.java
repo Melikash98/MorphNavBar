@@ -115,7 +115,7 @@ public class MorphNavBar extends View {
 
         barRadius = dp(36f);
         barHeight = dp(72f);
-        barSideMargin = dp(24f);      // کمی فاصله از کناره‌ها (زیباتر)
+        barSideMargin = dp(24f);
         barBottomMargin = dp(28f);
         bubbleDiameter = dp(98f);     // ← بزرگ‌تر شد (درخواست شما)
         itemIconSize = dp(36f);       // ← آیکون‌ها بزرگ‌تر
