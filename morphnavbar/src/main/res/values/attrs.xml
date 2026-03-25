@@ -20,5 +20,7 @@
         <attr name="lbv_shadowBlur" format="dimension" />
         <attr name="lbv_shadowDy" format="dimension" />
         <attr name="lbv_animationDuration" format="integer" />
+
+        <attr name="lbv_showLabels" format="boolean" />
     </declare-styleable>
 </resources>
