@@ -116,10 +116,10 @@ public class MorphNavBar extends View {
         inactiveIconColor = Color.parseColor("#00CFC0");
         activeIconColor = Color.WHITE;
 
-        barRadius = dp(26f);
+        barRadius = dp(36f);
         barHeight = dp(72f);
         barSideMargin = dp(0f);
-        barBottomMargin = dp(24f);
+        barBottomMargin = dp(0f);
         bubbleDiameter = dp(92f);
         itemIconSize = dp(34f);
         shadowBlur = dp(12f);
@@ -271,7 +271,7 @@ public class MorphNavBar extends View {
         float top = bottom - barHeight;
         barRect.set(left, top, right, bottom);
 
-        bubbleCenterY = top + bubbleDiameter * 0.38f;
+        bubbleCenterY = top + bubbleDiameter * 0.36f;
         activeIconY = bubbleCenterY;
         inactiveIconY = top + barHeight * 0.5f;
 
@@ -319,8 +319,8 @@ public class MorphNavBar extends View {
         float radius = barRadius;
 
         float pulse = (float) Math.sin(Math.PI * eased);
-        float bulgeDepth = dp(14f) + dp(7f) * pulse;           // ← قوی‌تر برای حس مایع
-        float bumpWidth = bubbleDiameter * 1.55f;
+        float bulgeDepth = dp(9f) + dp(4.5f) * pulse;
+        float bumpWidth = bubbleDiameter * 1.38f;
 
         float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
         float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
@@ -329,11 +329,11 @@ public class MorphNavBar extends View {
         path.moveTo(left + radius, top);
         path.lineTo(bumpLeft, top);
 
-        path.cubicTo(bumpLeft + bumpWidth * 0.3f, top,
-                bubbleX - bumpWidth * 0.25f, bulgeTop,
+        path.cubicTo(bumpLeft + bumpWidth * 0.25f, top,
+                bubbleX - bumpWidth * 0.19f, bulgeTop,
                 bubbleX, bulgeTop);
-        path.cubicTo(bubbleX + bumpWidth * 0.25f, bulgeTop,
-                bumpRight - bumpWidth * 0.3f, top,
+        path.cubicTo(bubbleX + bumpWidth * 0.19f, bulgeTop,
+                bumpRight - bumpWidth * 0.25f, top,
                 bumpRight, top);
 
         path.lineTo(right - radius, top);
