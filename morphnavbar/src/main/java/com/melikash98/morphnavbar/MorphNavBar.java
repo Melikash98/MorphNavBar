@@ -65,7 +65,7 @@ public class MorphNavBar extends View {
     private int selectedIndex = 0;
     private int fromIndex = 0;
     private int toIndex = 0;
-    private float progress = 2f;
+    private float progress = 1f;
 
     private int barColor;
     private int shadowColor;
@@ -215,7 +215,7 @@ public class MorphNavBar extends View {
             selectedIndex = index;
             fromIndex = index;
             toIndex = index;
-            progress = 2f;
+            progress = 1f;
             if (listener != null) listener.onTabSelected(index, items.get(index));
             invalidate();
             return;
@@ -237,7 +237,7 @@ public class MorphNavBar extends View {
             public void onAnimationEnd(Animator animation) {
                 selectedIndex = toIndex;
                 fromIndex = selectedIndex;
-                progress = 2f;
+                progress = 1f;
                 if (listener != null) listener.onTabSelected(selectedIndex, items.get(selectedIndex));
                 invalidate();
             }
@@ -253,7 +253,7 @@ public class MorphNavBar extends View {
     public void setSelectedColor(@ColorInt int color) { selectedColor = color; bubblePaint.setColor(color); invalidate(); }
     public void setInactiveIconColor(@ColorInt int color) { inactiveIconColor = color; inactiveIconPaint.setColor(color); invalidate(); }
     public void setActiveIconColor(@ColorInt int color) { activeIconColor = color; activeIconPaint.setColor(color); invalidate(); }
-    public void setAnimationDuration(int duration) { this.animationDuration = Math.max(2, duration); }
+    public void setAnimationDuration(int duration) { this.animationDuration = Math.max(1, duration); }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -271,9 +271,9 @@ public class MorphNavBar extends View {
         float top = bottom - barHeight;
         barRect.set(left, top, right, bottom);
 
-        bubbleCenterY = top + bubbleDiameter * 1.36f;
+        bubbleCenterY = top + bubbleDiameter * 0.36f;
         activeIconY = bubbleCenterY;                    // داخل حباب
-        inactiveIconY = top + barHeight * 1.5f;         // ← وسط نوار + فاصله از پایین (درخواست شما)
+        inactiveIconY = top + barHeight * 0.5f;         // ← وسط نوار + فاصله از پایین (درخواست شما)
 
         rebuildCenters();
     }
