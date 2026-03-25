@@ -84,8 +84,8 @@ public class MorphNavBar extends View {
     private int animationDuration;
 
     private float bubbleCenterY;
-    private float inactiveIconY;   // آیکون‌های غیرفعال = وسط نوار + فاصله از پایین
-    private float activeIconY;     // آیکون فعال = دقیقاً داخل حباب
+    private float inactiveIconY;
+    private float activeIconY;
 
     public MorphNavBar(@NonNull Context context) {
         this(context, null);
@@ -121,7 +121,7 @@ public class MorphNavBar extends View {
         barSideMargin = dp(24f);
         barBottomMargin = dp(24f);
         bubbleDiameter = dp(64f);
-        itemIconSize = dp(38f);        // آیکون‌ها بزرگ و خوانا
+        itemIconSize = dp(38f);
         shadowBlur = dp(12f);
         shadowDy = dp(4f);
         animationDuration = DEFAULT_ANIMATION_DURATION;
@@ -272,8 +272,8 @@ public class MorphNavBar extends View {
         barRect.set(left, top, right, bottom);
 
         bubbleCenterY = top + bubbleDiameter * 0.36f;
-        activeIconY = bubbleCenterY;                    // داخل حباب
-        inactiveIconY = top + barHeight * 0.5f;         // ← وسط نوار + فاصله از پایین (درخواست شما)
+        activeIconY = bubbleCenterY;
+        inactiveIconY = top + barHeight * 0.5f;
 
         rebuildCenters();
     }
@@ -299,7 +299,7 @@ public class MorphNavBar extends View {
         drawShadow(canvas, bubbleX, eased);
         drawBar(canvas, bubbleX, eased);
         drawInactiveIcons(canvas, bubbleX);
-        drawBubble(canvas, bubbleX, eased);   // ← حباب مایع + حالت کشیده شدن
+        drawBubble(canvas, bubbleX, eased);
         drawActiveIcon(canvas, bubbleX, eased);
     }
 
@@ -360,7 +360,6 @@ public class MorphNavBar extends View {
 
             float inactiveAlpha = 1f - 0.88f * eased;
 
-            // فقط آیکون حالت غیرفعال (base) — آیکون انتخاب‌شده زیرش حذف شد
             drawDrawable(canvas, item.getIcon(), centerX, inactiveIconY, inactiveIconColor, inactiveAlpha);
         }
     }
@@ -369,8 +368,7 @@ public class MorphNavBar extends View {
         float r = bubbleDiameter / 2f;
         float pulse = (float) Math.sin(Math.PI * eased);
 
-        // حالت کشیده شدن و تبدیل به مایع (blob) دقیقاً مثل ویدیو اصلی
-        float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased); // کشیده شدن افقی در وسط انیمیشن
+        float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased);
         float mainRadiusX = r * stretchFactor * (0.97f - 0.03f * pulse);
         float mainRadiusY = r * (0.97f - 0.03f * pulse);
 
@@ -395,7 +393,6 @@ public class MorphNavBar extends View {
 
         canvas.drawPath(bubblePath, bubblePaint);
 
-        // highlight الاستیک برای حس مایع بودن
         if (eased > 0.05f && eased < 0.95f) {
             float highlightRadius = r * 0.21f * pulse;
             canvas.drawCircle(bubbleX, crestY - highlightRadius * 0.22f, highlightRadius, bubblePaint);
@@ -413,7 +410,6 @@ public class MorphNavBar extends View {
         drawDrawable(canvas, iconToDraw, bubbleX, activeIconY, activeIconColor, 1f, scale);
     }
 
-    // متد کوتاه (بدون scale)
     private void drawDrawable(Canvas canvas,
                               @NonNull Drawable drawable,
                               float centerX,
@@ -423,7 +419,6 @@ public class MorphNavBar extends View {
         drawDrawable(canvas, drawable, centerX, centerY, tint, alpha, 1f);
     }
 
-    // متد کامل (با scale)
     private void drawDrawable(Canvas canvas,
                               @NonNull Drawable drawable,
                               float centerX,
@@ -462,7 +457,7 @@ public class MorphNavBar extends View {
             case MotionEvent.ACTION_DOWN:
                 return true;
             case MotionEvent.ACTION_MOVE:
-                return true; // بلاک کامل Drag
+                return true;
             case MotionEvent.ACTION_UP:
                 int index = hitTest(event.getX(), event.getY());
                 if (index != -1) {
