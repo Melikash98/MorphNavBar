@@ -319,7 +319,7 @@ public class MorphNavBar extends View {
         float radius = barRadius;
 
         float pulse = (float) Math.sin(Math.PI * eased);
-        float bulgeDepth = dp(9f) + dp(4.5f) * pulse;
+        float bulgeDepth = dp(14f) + dp(7f) * pulse;
         float bumpWidth = bubbleDiameter * 1.38f;
 
         float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
@@ -358,7 +358,7 @@ public class MorphNavBar extends View {
             float t = clamp(1f - (distance / influenceRadius), 0f, 1f);
             float eased = positionInterpolator.getInterpolation(t);
 
-            float inactiveAlpha = 1f - 0.88f * eased;
+            float inactiveAlpha = 1f - eased;
 
             drawDrawable(canvas, item.getIcon(), centerX, inactiveIconY, inactiveIconColor, inactiveAlpha);
         }
@@ -368,7 +368,7 @@ public class MorphNavBar extends View {
         float r = bubbleDiameter / 2f;
         float pulse = (float) Math.sin(Math.PI * eased);
 
-        float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased);
+        float stretchFactor = 1f + 0.4f * (float) Math.sin(Math.PI * eased);
         float mainRadiusX = r * stretchFactor * (0.97f - 0.03f * pulse);
         float mainRadiusY = r * (0.97f - 0.03f * pulse);
 
