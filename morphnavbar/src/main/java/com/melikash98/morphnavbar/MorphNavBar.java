@@ -135,7 +135,7 @@ public class MorphNavBar extends View {
         barSideMargin = dp(0f);
         barBottomMargin = dp(0f);
         bubbleDiameter = dp(92f);
-        itemIconSize = dp(34f);        // آیکون‌ها بزرگ و خوانا
+        itemIconSize = dp(34f);
         shadowBlur = dp(12f);
         shadowDy = dp(4f);
         animationDuration = DEFAULT_ANIMATION_DURATION;
@@ -330,13 +330,14 @@ public class MorphNavBar extends View {
     public void setSelectedColor(@ColorInt int color) {
         selectedColor = color;
         bubblePaint.setColor(color);
-        labelInactiveColor = color;
+        labelActiveColor = color;
         invalidate();
     }
 
     public void setInactiveIconColor(@ColorInt int color) {
         inactiveIconColor = color;
         inactiveIconPaint.setColor(color);
+        labelInactiveColor = color;
         invalidate();
     }
 
