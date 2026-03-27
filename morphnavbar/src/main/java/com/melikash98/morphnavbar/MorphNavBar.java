@@ -92,9 +92,9 @@ public class MorphNavBar extends View {
     private float activeIconY;
 
     private boolean showLabels;
+    private float labelBaselineY;
     private int labelInactiveColor;
     private int labelActiveColor;
-    private float labelBaselineY;
 
     public MorphNavBar(@NonNull Context context) {
         this(context, null);
@@ -122,8 +122,8 @@ public class MorphNavBar extends View {
         barColor = Color.WHITE;
 
         showLabels = true;
-        labelInactiveColor = inactiveIconColor;
-        labelActiveColor = selectedColor;
+        labelInactiveColor = Color.parseColor("#757575");
+        labelActiveColor = Color.BLACK;
 
         shadowColor = Color.parseColor("#22000000");
         selectedColor = Color.parseColor("#00CFC0");
@@ -197,7 +197,9 @@ public class MorphNavBar extends View {
         items.clear();
         items.addAll(tabs);
         tabLabels.clear();
-        for (int i = 0; i < items.size(); i++) tabLabels.add(null);
+        for (LiquidTabItem item : tabs) {
+            tabLabels.add(item.getLabel());
+        }
 
         if (selectedIndex >= items.size()) selectedIndex = 0;
         fromIndex = selectedIndex;
@@ -212,7 +214,9 @@ public class MorphNavBar extends View {
         items.clear();
         Collections.addAll(items, tabs);
         tabLabels.clear();
-        for (int i = 0; i < items.size(); i++) tabLabels.add(null);
+        for (LiquidTabItem item : tabs) {
+            tabLabels.add(item.getLabel());
+        }
 
         if (selectedIndex >= items.size()) selectedIndex = 0;
         fromIndex = selectedIndex;
@@ -401,14 +405,13 @@ public class MorphNavBar extends View {
         drawBubble(canvas, bubbleX, eased);
         drawActiveIcon(canvas, bubbleX, eased);
 
-        drawLabels(canvas, bubbleX);
+        drawLabels(canvas);
     }
-    private void drawLabels(Canvas canvas, float bubbleX) {
+    private void drawLabels(Canvas canvas) {
         if (!showLabels || items.isEmpty()) return;
 
         float eased = positionInterpolator.getInterpolation(progress);
         int activeIndex = eased < 0.5f ? fromIndex : toIndex;
-        float influenceRadius = bubbleDiameter * 0.9f;
 
         for (int i = 0; i < items.size(); i++) {
             CharSequence text = (i < tabLabels.size()) ? tabLabels.get(i) : null;
@@ -418,11 +421,7 @@ public class MorphNavBar extends View {
             boolean isActive = (i == activeIndex);
 
             labelPaint.setColor(isActive ? labelActiveColor : labelInactiveColor);
-
-            float distance = Math.abs(centerX - bubbleX);
-            float t = clamp(1f - (distance / influenceRadius), 0f, 1f);
-            float alphaFactor = isActive ? 1f : (1f - 0.4f * t);
-            labelPaint.setAlpha((int) (255f * alphaFactor));
+            labelPaint.setAlpha(255); // همیشه کاملاً opaque (مجزا از انیمیشن دایره)
 
             canvas.drawText(text.toString(), centerX, labelBaselineY, labelPaint);
         }
