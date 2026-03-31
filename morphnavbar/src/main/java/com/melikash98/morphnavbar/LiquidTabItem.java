@@ -2,51 +2,63 @@ package com.melikash98.morphnavbar;
 
 import android.graphics.drawable.Drawable;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 
 public final class LiquidTabItem {
-    private final Drawable icon;
-    @Nullable
-    private final Drawable selectedIcon;
-    @Nullable
-    private final CharSequence contentDescription;
-
-    protected LiquidTabItem(@NonNull Drawable icon,
-                            @Nullable Drawable selectedIcon,
-                            @Nullable CharSequence contentDescription) {
-        this.icon = icon;
-        this.selectedIcon = selectedIcon;
-        this.contentDescription = contentDescription;
+    public LiquidTabItem() {
     }
+    public static final class Model{
+        @NonNull
+        private final CharSequence label;
 
-    @NonNull
-    public static LiquidTabItem of(@NonNull Drawable icon,
-                                   @Nullable CharSequence contentDescription) {
-        return new LiquidTabItem(icon, null, contentDescription);
+        @DrawableRes
+        private final int iconResId;
+
+        @DrawableRes
+        private final int selectedIconResId;
+
+        @Nullable
+        private final CharSequence contentDescription;
+
+        public Model(@NonNull CharSequence label, @DrawableRes int iconResId) {
+            this(label, iconResId, 0, null);
+        }
+
+        public Model(@NonNull CharSequence label,
+                     @DrawableRes int iconResId,
+                     @DrawableRes int selectedIconResId) {
+            this(label, iconResId, selectedIconResId, null);
+        }
+
+        public Model(@NonNull CharSequence label,
+                     @DrawableRes int iconResId,
+                     @DrawableRes int selectedIconResId,
+                     @Nullable CharSequence contentDescription) {
+            this.label = label;
+            this.iconResId = iconResId;
+            this.selectedIconResId = selectedIconResId;
+            this.contentDescription = contentDescription;
+        }
+
+        @NonNull
+        public CharSequence getLabel() {
+            return label;
+        }
+
+        public int getIconResId() {
+            return iconResId;
+        }
+
+        public int getSelectedIconResId() {
+            return selectedIconResId;
+        }
+
+        @Nullable
+        public CharSequence getContentDescription() {
+            return contentDescription;
+        }
     }
-
-    @NonNull
-    public static LiquidTabItem of(@NonNull Drawable icon,
-                                   @NonNull Drawable selectedIcon,
-                                   @Nullable CharSequence contentDescription) {
-        return new LiquidTabItem(icon, selectedIcon, contentDescription);
-    }
-
-    @NonNull
-    public Drawable getIcon() {
-        return icon;
-    }
-
-    @Nullable
-    public Drawable getSelectedIcon() {
-        return selectedIcon;
-    }
-
-    @Nullable
-    public CharSequence getContentDescription() {
-        return contentDescription;
-    }
-
 }
