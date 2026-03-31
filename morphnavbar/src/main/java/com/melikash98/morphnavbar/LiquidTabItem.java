@@ -5,29 +5,20 @@ import android.graphics.drawable.Drawable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-/**
- * A single tab item rendered by {@link MorphNavBar}.
- *
- * The library does not hardcode any icons. Consumers can provide any drawable.
- * A separate selected drawable is optional. If omitted, the base drawable is
- * tinted according to the active/inactive state colors.
- */
-public final class LiquidTabItem {
 
-    @NonNull
+public class LiquidTabItem {
     private final Drawable icon;
     @Nullable
     private final Drawable selectedIcon;
     @Nullable
     private final CharSequence contentDescription;
-
     @Nullable
     private final CharSequence label;
 
-    private LiquidTabItem(@NonNull Drawable icon,
-                          @Nullable Drawable selectedIcon,
-                          @Nullable CharSequence contentDescription,
-                          @Nullable CharSequence label) {
+    protected LiquidTabItem(@NonNull Drawable icon,
+                            @Nullable Drawable selectedIcon,
+                            @Nullable CharSequence contentDescription,
+                            @Nullable CharSequence label) {
         this.icon = icon;
         this.selectedIcon = selectedIcon;
         this.contentDescription = contentDescription;
@@ -58,13 +49,22 @@ public final class LiquidTabItem {
     }
 
     @NonNull
-    public Drawable getIcon() { return icon; }
+    public Drawable getIcon() {
+        return icon;
+    }
 
     @Nullable
-    public Drawable getSelectedIcon() { return selectedIcon; }
+    public Drawable getSelectedIcon() {
+        return selectedIcon;
+    }
 
     @Nullable
-    public CharSequence getContentDescription() { return contentDescription; }
+    public CharSequence getContentDescription() {
+        return contentDescription;
+    }
+
     @Nullable
-    public CharSequence getLabel() { return label; }
+    public CharSequence getLabel() {
+        return label;
+    }
 }
