@@ -106,7 +106,7 @@ public class MorphNavBar extends View {
 
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
     private static final float DEFAULT_LABEL_TOP_GAP_DP = 0f;
-    private static final float DEFAULT_LABEL_BOTTOM_GAP_DP = 12f;
+    private static final float DEFAULT_LABEL_BOTTOM_GAP_DP = 10f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -139,7 +139,7 @@ public class MorphNavBar extends View {
         activeIconColor = Color.WHITE;
 
         barRadius = dp(26f);
-        barHeight = dp(92f);
+        barHeight = dp(100f);
         barSideMargin = dp(0f);
         barBottomMargin = dp(0f);
         bubbleDiameter = dp(92f);
