@@ -14,9 +14,12 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
+import android.text.TextPaint;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -31,8 +34,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.graphics.ColorUtils;
 import androidx.core.widget.ImageViewCompat;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 
@@ -50,13 +56,15 @@ public class MorphNavBar extends View {
     private final Paint bubblePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint inactiveIconPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint activeIconPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final TextPaint labelPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint.FontMetrics labelFontMetrics = new Paint.FontMetrics();
 
 
     private final RectF barRect = new RectF();
     private final Path barPath = new Path();
     private final Path bubblePath = new Path();
 
-    private final List<LiquidTabItem> items = new ArrayList<>();
+    private final List<LiquidTabItem.Model> items = new ArrayList<>();
     private final List<Float> centerXs = new ArrayList<>();
 
     private final FastOutSlowInInterpolator positionInterpolator = new FastOutSlowInInterpolator();
@@ -89,6 +97,15 @@ public class MorphNavBar extends View {
     private float inactiveIconY;
     private float activeIconY;
 
+    private boolean showLabels;
+    private float labelTextSizePx;
+    private String labelFontFamily;
+
+    private boolean hasAnyLabel = false;
+    private float labelBaselineY = 0f;
+
+    private static final float DEFAULT_LABEL_SIZE_SP = 12f;
+    private static final float DEFAULT_LABEL_TOP_GAP_DP = 6f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -130,6 +147,10 @@ public class MorphNavBar extends View {
         shadowDy = dp(4f);
         animationDuration = DEFAULT_ANIMATION_DURATION;
 
+        showLabels = true;
+        labelTextSizePx = sp(DEFAULT_LABEL_SIZE_SP);
+        labelFontFamily = "Roboto Mono";
+
     }
 
     private void readAttributes(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
@@ -151,6 +172,15 @@ public class MorphNavBar extends View {
             shadowBlur = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_shadowBlur, shadowBlur);
             shadowDy = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_shadowDy, shadowDy);
             animationDuration = a.getInteger(R.styleable.LiquidBottomNavigationView_lbv_animationDuration, animationDuration);
+
+            showLabels = a.getBoolean(R.styleable.LiquidBottomNavigationView_lbv_showLabels, showLabels);
+            labelTextSizePx = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_labelTextSize, labelTextSizePx);
+
+            String family = a.getString(R.styleable.LiquidBottomNavigationView_lbv_labelFontFamily);
+            if (family != null && !family.trim().isEmpty()) {
+                labelFontFamily = family.trim();
+            }
+
         } finally {
             a.recycle();
         }
@@ -178,31 +208,69 @@ public class MorphNavBar extends View {
         activeIconPaint.setStrokeWidth(dp(1.9f));
         activeIconPaint.setColor(activeIconColor);
 
-
+        labelPaint.setTextAlign(Paint.Align.CENTER);
+        labelPaint.setTextSize(labelTextSizePx);
+        labelPaint.setColor(inactiveIconColor);
+        applyLabelTypeface();
     }
 
 
+    private void applyLabelTypeface() {
+        Typeface tf = Typeface.create(labelFontFamily, Typeface.NORMAL);
+        if (tf == null) {
+            tf = Typeface.MONOSPACE;
+        }
+        labelPaint.setTypeface(tf);
+    }
 
-    public void setTabs(@NonNull List<LiquidTabItem> tabs) {
+    public void setTabs(@NonNull List<LiquidTabItem.Model> tabs) {
         items.clear();
         items.addAll(tabs);
-        if (selectedIndex >= items.size()) selectedIndex = 0;
-        fromIndex = selectedIndex;
-        toIndex = selectedIndex;
-        progress = 1f;
+        updateHasAnyLabel();
+        resetSelection();
+        rebuildCenters();
+        updateContentDescription();
+        requestLayout();
+        invalidate();
+    }
+
+    public void setTabs(@NonNull LiquidTabItem.Model... tabs) {
+        items.clear();
+        Collections.addAll(items, tabs);
+        updateHasAnyLabel();
+        resetSelection();
+        rebuildCenters();
+        updateContentDescription();
+        requestLayout();
+        invalidate();
+    }
+
+    public void add(@NonNull LiquidTabItem.Model tab) {
+        items.add(tab);
+        updateHasAnyLabel();
+
+        if (items.size() == 1) {
+            selectedIndex = 0;
+            fromIndex = 0;
+            toIndex = 0;
+            progress = 1f;
+            updateContentDescription();
+        }
+
         rebuildCenters();
         requestLayout();
         invalidate();
     }
 
-    public void setTabs(@NonNull LiquidTabItem... tabs) {
+    public void clearTabs() {
         items.clear();
-        Collections.addAll(items, tabs);
-        if (selectedIndex >= items.size()) selectedIndex = 0;
-        fromIndex = selectedIndex;
-        toIndex = selectedIndex;
+        centerXs.clear();
+        hasAnyLabel = false;
+        selectedIndex = 0;
+        fromIndex = 0;
+        toIndex = 0;
         progress = 1f;
-        rebuildCenters();
+        setContentDescription(null);
         requestLayout();
         invalidate();
     }
@@ -211,19 +279,28 @@ public class MorphNavBar extends View {
         return selectedIndex;
     }
 
+    public int getItemCount() {
+        return items.size();
+    }
+
     public void setSelectedIndex(int index) {
         setSelectedIndex(index, true);
     }
 
     public void setSelectedIndex(int index, boolean animate) {
         if (items.isEmpty() || index < 0 || index >= items.size() || index == selectedIndex) return;
-        if (animator != null) animator.cancel();
+
+        if (animator != null) {
+            animator.cancel();
+            animator = null;
+        }
 
         if (!animate || centerXs.isEmpty()) {
             selectedIndex = index;
             fromIndex = index;
             toIndex = index;
             progress = 1f;
+            updateContentDescription();
             if (listener != null) listener.onTabSelected(selectedIndex, items.get(selectedIndex));
             invalidate();
             return;
@@ -236,23 +313,76 @@ public class MorphNavBar extends View {
         animator = ValueAnimator.ofFloat(0f, 1f);
         animator.setDuration(animationDuration);
         animator.setInterpolator(positionInterpolator);
+
+        final boolean[] cancelled = new boolean[1];
+
         animator.addUpdateListener(animation -> {
             progress = (float) animation.getAnimatedValue();
             invalidate();
         });
+
         animator.addListener(new AnimatorListenerAdapter() {
             @Override
+            public void onAnimationCancel(Animator animation) {
+                cancelled[0] = true;
+            }
+
+            @Override
             public void onAnimationEnd(Animator animation) {
+                if (cancelled[0]) return;
+
                 selectedIndex = toIndex;
                 fromIndex = selectedIndex;
                 progress = 1f;
-                if (listener != null)
+                updateContentDescription();
+
+                if (listener != null && !items.isEmpty()) {
                     listener.onTabSelected(selectedIndex, items.get(selectedIndex));
+                }
                 invalidate();
+                animator = null;
             }
         });
+
         animator.start();
     }
+
+    public void setShowLabels(boolean show) {
+        if (this.showLabels == show) return;
+        this.showLabels = show;
+        requestLayout();
+        invalidate();
+    }
+
+    public void setLabelTextSizePx(float sizePx) {
+        if (this.labelTextSizePx == sizePx) return;
+        this.labelTextSizePx = sizePx;
+        labelPaint.setTextSize(sizePx);
+        requestLayout();
+        invalidate();
+    }
+
+    public void setLabelTextSizeSp(float sizeSp) {
+        setLabelTextSizePx(sp(sizeSp));
+    }
+
+    public void setLabelTypeface(@Nullable Typeface typeface) {
+        labelPaint.setTypeface(typeface != null ? typeface : Typeface.MONOSPACE);
+        requestLayout();
+        invalidate();
+    }
+
+    public void setLabelFontFamily(@Nullable String fontFamily) {
+        if (fontFamily == null || fontFamily.trim().isEmpty()) {
+            this.labelFontFamily = "Roboto Mono";
+        } else {
+            this.labelFontFamily = fontFamily.trim();
+        }
+        applyLabelTypeface();
+        requestLayout();
+        invalidate();
+    }
+
 
     public void setBarColor(@ColorInt int color) {
         barColor = color;
@@ -282,31 +412,79 @@ public class MorphNavBar extends View {
         this.animationDuration = Math.max(1, duration);
     }
 
+    private void updateHasAnyLabel() {
+        hasAnyLabel = false;
+        for (LiquidTabItem.Model item : items) {
+            if (item.getLabel() != null && item.getLabel().length() > 0) {
+                hasAnyLabel = true;
+                break;
+            }
+        }
+    }
+
+    private void updateContentDescription() {
+        if (items.isEmpty() || selectedIndex < 0 || selectedIndex >= items.size()) {
+            setContentDescription(null);
+            return;
+        }
+
+        LiquidTabItem.Model item = items.get(selectedIndex);
+        CharSequence cd = item.getContentDescription();
+        if (cd != null && cd.length() > 0) {
+            setContentDescription(cd);
+        } else if (item.getLabel() != null && item.getLabel().length() > 0) {
+            setContentDescription(item.getLabel());
+        } else {
+            setContentDescription(null);
+        }
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        float labelArea = getLabelAreaHeightPx();
         int desiredWidth = (int) Math.ceil(getPaddingLeft() + getPaddingRight() + dp(360));
-        int desiredHeight = (int) Math.ceil(getPaddingTop() + getPaddingBottom() +
-                barHeight + bubbleDiameter * 0.3f + barBottomMargin );
-
-        setMeasuredDimension(resolveSize(desiredWidth, widthMeasureSpec),
-                resolveSize(desiredHeight, heightMeasureSpec));
+        int desiredHeight = (int) Math.ceil(
+                getPaddingTop() + getPaddingBottom()
+                        + barHeight
+                        + bubbleDiameter * 0.30f
+                        + barBottomMargin
+                        + labelArea
+        );
+        setMeasuredDimension(
+                resolveSize(desiredWidth, widthMeasureSpec),
+                resolveSize(desiredHeight, heightMeasureSpec)
+        );
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
 
+        float labelArea = getLabelAreaHeightPx();
+
         float left = getPaddingLeft() + barSideMargin;
         float right = w - getPaddingRight() - barSideMargin;
-        float bottom = h - getPaddingBottom() - barBottomMargin;
+        float bottom = h - getPaddingBottom() - barBottomMargin - labelArea;
         float top = bottom - barHeight;
 
         barRect.set(left, top, right, bottom);
+
         bubbleCenterY = top + bubbleDiameter * 0.5f;
         activeIconY = bubbleCenterY;
         inactiveIconY = bubbleCenterY;
 
         rebuildCenters();
+
+        if (showLabels && hasAnyLabel) {
+            labelPaint.getFontMetrics(labelFontMetrics);
+            labelBaselineY = barRect.bottom + dp(DEFAULT_LABEL_TOP_GAP_DP) - labelFontMetrics.top;
+        }
+    }
+
+    private float getLabelAreaHeightPx() {
+        if (!showLabels || !hasAnyLabel) return 0f;
+        labelPaint.getFontMetrics(labelFontMetrics);
+        return (labelFontMetrics.bottom - labelFontMetrics.top) + dp(DEFAULT_LABEL_TOP_GAP_DP);
     }
 
     private void rebuildCenters() {
@@ -332,6 +510,10 @@ public class MorphNavBar extends View {
         drawInactiveIcons(canvas, bubbleX);
         drawBubble(canvas, bubbleX, eased);
         drawActiveIcon(canvas, bubbleX, eased);
+
+        if (showLabels && hasAnyLabel) {
+            drawLabels(canvas, bubbleX);
+        }
     }
 
 
@@ -344,6 +526,7 @@ public class MorphNavBar extends View {
     private void drawBar(Canvas canvas, float bubbleX, float eased) {
         canvas.drawPath(buildBarPath(bubbleX, eased), barPaint);
     }
+
     private Path buildBarPath(float bubbleX, float eased) {
         Path path = new Path();
         float left = barRect.left, top = barRect.top, right = barRect.right, bottom = barRect.bottom;
@@ -374,14 +557,16 @@ public class MorphNavBar extends View {
     private void drawInactiveIcons(Canvas canvas, float bubbleX) {
         float influenceRadius = bubbleDiameter * 0.9f;
         for (int i = 0; i < items.size(); i++) {
-            LiquidTabItem item = items.get(i);
+            LiquidTabItem.Model item = items.get(i);
             float centerX = centerXs.get(i);
             float distance = Math.abs(centerX - bubbleX);
             float t = clamp(1f - (distance / influenceRadius), 0f, 1f);
             float eased = positionInterpolator.getInterpolation(t);
             float inactiveAlpha = 1f - 0.88f * eased;
-
-            drawDrawable(canvas, item.getIcon(), centerX, inactiveIconY, inactiveIconColor, inactiveAlpha);
+            Drawable icon = loadDrawable(item.getIconResId());
+            if (icon != null) {
+                drawDrawable(canvas, icon, centerX, inactiveIconY, inactiveIconColor, inactiveAlpha);
+            }
         }
     }
 
@@ -415,18 +600,61 @@ public class MorphNavBar extends View {
             canvas.drawCircle(bubbleX, crestY - highlightRadius * 0.22f, highlightRadius, bubblePaint);
         }
     }
+
     private void drawActiveIcon(Canvas canvas, float bubbleX, float eased) {
         int iconIndex = eased < 0.5f ? fromIndex : toIndex;
         if (iconIndex < 0 || iconIndex >= items.size()) return;
-        LiquidTabItem item = items.get(iconIndex);
+        LiquidTabItem.Model item = items.get(iconIndex);
         float scale = 1f + 0.085f * (float) Math.sin(Math.PI * eased);
-        Drawable iconToDraw = item.getSelectedIcon() != null ? item.getSelectedIcon() : item.getIcon();
-        drawDrawable(canvas, iconToDraw, bubbleX, activeIconY, activeIconColor, 1f, scale);
+        Drawable icon = item.getSelectedIconResId() != 0
+                ? loadDrawable(item.getSelectedIconResId())
+                : loadDrawable(item.getIconResId());
+        if (icon != null) {
+            drawDrawable(canvas, icon, bubbleX, activeIconY, activeIconColor, 1f, scale);
+        }
+
     }
 
     private void drawDrawable(Canvas canvas, @NonNull Drawable drawable, float centerX, float centerY,
                               @ColorInt int tint, float alpha) {
         drawDrawable(canvas, drawable, centerX, centerY, tint, alpha, 1f);
+    }
+
+    private void drawLabels(Canvas canvas, float bubbleX) {
+        if (!showLabels || !hasAnyLabel || items.isEmpty()) return;
+
+        float influenceRadius = bubbleDiameter * 0.9f;
+        float segmentWidth = barRect.width() / Math.max(1, items.size());
+        float maxTextWidth = segmentWidth - dp(10f);
+
+        for (int i = 0; i < items.size(); i++) {
+            LiquidTabItem.Model item = items.get(i);
+            CharSequence label = item.getLabel();
+            if (label == null || label.length() == 0) continue;
+
+            float centerX = centerXs.get(i);
+            float distance = Math.abs(centerX - bubbleX);
+            float t = clamp(1f - (distance / influenceRadius), 0f, 1f);
+            float eased = positionInterpolator.getInterpolation(t);
+
+            int color = ColorUtils.blendARGB(inactiveIconColor, selectedColor, eased);
+            labelPaint.setColor(color);
+
+            CharSequence ellipsized = TextUtils.ellipsize(
+                    label,
+                    labelPaint,
+                    maxTextWidth,
+                    TextUtils.TruncateAt.END
+            );
+
+            canvas.drawText(ellipsized.toString(), centerX, labelBaselineY, labelPaint);
+        }
+    }
+
+    @Nullable
+    private Drawable loadDrawable(@DrawableRes int resId) {
+        if (resId == 0) return null;
+        return AppCompatResources.getDrawable(getContext(), resId);
     }
 
     private void drawDrawable(Canvas canvas, @NonNull Drawable drawable, float centerX, float centerY,
@@ -442,7 +670,6 @@ public class MorphNavBar extends View {
         d.draw(canvas);
         d.setAlpha(oldAlpha);
     }
-
 
 
     private float getCenterX(int index) {
@@ -504,5 +731,20 @@ public class MorphNavBar extends View {
 
     private static float clamp(float value, float min, float max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    private float sp(float value) {
+        return TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP,
+                value,
+                getResources().getDisplayMetrics()
+        );
+    }
+
+    private void resetSelection() {
+        selectedIndex = 0;
+        fromIndex = 0;
+        toIndex = 0;
+        progress = 1f;
     }
 }
