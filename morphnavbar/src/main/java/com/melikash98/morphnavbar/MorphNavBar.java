@@ -106,6 +106,7 @@ public class MorphNavBar extends View {
 
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
     private static final float DEFAULT_LABEL_TOP_GAP_DP = 0f;
+    private static final float DEFAULT_LABEL_BOTTOM_GAP_DP = 12f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -138,9 +139,9 @@ public class MorphNavBar extends View {
         activeIconColor = Color.WHITE;
 
         barRadius = dp(26f);
-        barHeight = dp(72f);
+        barHeight = dp(92f);
         barSideMargin = dp(0f);
-        barBottomMargin = dp(16f);
+        barBottomMargin = dp(0f);
         bubbleDiameter = dp(92f);
         itemIconSize = dp(34f);
         shadowBlur = dp(12f);
@@ -444,13 +445,11 @@ public class MorphNavBar extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int desiredWidth = (int) Math.ceil(getPaddingLeft() + getPaddingRight() + dp(360));
-        float labelArea = getLabelAreaHeightPx();
         int desiredHeight = (int) Math.ceil(
                 getPaddingTop() + getPaddingBottom()
                         + barHeight
                         + bubbleDiameter * 0.30f
                         + barBottomMargin
-                        + labelArea
         );
         setMeasuredDimension(
                 resolveSize(desiredWidth, widthMeasureSpec),
@@ -462,12 +461,10 @@ public class MorphNavBar extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
 
-        float labelArea = getLabelAreaHeightPx();
-
         float left = getPaddingLeft() + barSideMargin;
         float right = w - getPaddingRight() - barSideMargin;
         float bottom = h - getPaddingBottom() - barBottomMargin;
-        float top = bottom - (barHeight + getLabelAreaHeightPx());
+        float top = bottom - barHeight;
 
         barRect.set(left, top, right, bottom);
 
@@ -479,7 +476,7 @@ public class MorphNavBar extends View {
 
         if (showLabels && hasAnyLabel) {
             labelPaint.getFontMetrics(labelFontMetrics);
-            labelBaselineY = barRect.bottom - dp(DEFAULT_LABEL_TOP_GAP_DP) - labelFontMetrics.bottom;
+            labelBaselineY = barRect.bottom - dp(DEFAULT_LABEL_BOTTOM_GAP_DP) - labelFontMetrics.bottom;
         }
     }
 
