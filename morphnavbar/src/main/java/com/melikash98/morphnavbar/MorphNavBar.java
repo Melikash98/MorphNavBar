@@ -50,7 +50,7 @@ public class MorphNavBar extends View {
     private final Paint bubblePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint inactiveIconPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint activeIconPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint labelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
 
     private final RectF barRect = new RectF();
     private final Path barPath = new Path();
@@ -89,9 +89,6 @@ public class MorphNavBar extends View {
     private float inactiveIconY;
     private float activeIconY;
 
-    private boolean showLabels;
-    private float labelY;
-    private float labelTextSize;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -133,8 +130,6 @@ public class MorphNavBar extends View {
         shadowDy = dp(4f);
         animationDuration = DEFAULT_ANIMATION_DURATION;
 
-        showLabels = false;
-        labelTextSize = dp(14f);
     }
 
     private void readAttributes(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
@@ -156,7 +151,6 @@ public class MorphNavBar extends View {
             shadowBlur = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_shadowBlur, shadowBlur);
             shadowDy = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_shadowDy, shadowDy);
             animationDuration = a.getInteger(R.styleable.LiquidBottomNavigationView_lbv_animationDuration, animationDuration);
-            showLabels = a.getBoolean(R.styleable.LiquidBottomNavigationView_lbv_showLabels, false);
         } finally {
             a.recycle();
         }
@@ -187,16 +181,7 @@ public class MorphNavBar extends View {
 
     }
 
-    public void setShowLabels(boolean show) {
-        if (this.showLabels == show) return;
-        this.showLabels = show;
-        requestLayout();
-        invalidate();
-    }
 
-    public boolean isShowLabels() {
-        return showLabels;
-    }
 
     public void setTabs(@NonNull List<LiquidTabItem> tabs) {
         items.clear();
@@ -300,9 +285,8 @@ public class MorphNavBar extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int desiredWidth = (int) Math.ceil(getPaddingLeft() + getPaddingRight() + dp(360));
-        int extraHeight = (int) (showLabels ? dp(40f) : 0f);
         int desiredHeight = (int) Math.ceil(getPaddingTop() + getPaddingBottom() +
-                barHeight + bubbleDiameter * 0.3f + barBottomMargin + extraHeight);
+                barHeight + bubbleDiameter * 0.3f + barBottomMargin );
 
         setMeasuredDimension(resolveSize(desiredWidth, widthMeasureSpec),
                 resolveSize(desiredHeight, heightMeasureSpec));
@@ -323,7 +307,6 @@ public class MorphNavBar extends View {
         inactiveIconY = bubbleCenterY;
 
         rebuildCenters();
-        labelY = showLabels ? barRect.bottom + dp(20f) : 0f;
     }
 
     private void rebuildCenters() {
@@ -349,27 +332,8 @@ public class MorphNavBar extends View {
         drawInactiveIcons(canvas, bubbleX);
         drawBubble(canvas, bubbleX, eased);
         drawActiveIcon(canvas, bubbleX, eased);
-        drawLabels(canvas);
     }
 
-    private void drawLabels(Canvas canvas) {
-        if (!showLabels || items.isEmpty() || labelY <= 0f) return;
-
-        Paint.FontMetrics fm = labelPaint.getFontMetrics();
-        float baseline = labelY - (fm.ascent + fm.descent) / 2f;
-
-        for (int i = 0; i < items.size(); i++) {
-            LiquidTabItem item = items.get(i);
-            CharSequence labelText = item.getLabel();
-            if (labelText == null || labelText.length() == 0) continue;
-
-            float centerX = centerXs.get(i);
-            int color = (i == selectedIndex) ? activeIconColor : inactiveIconColor;
-
-            labelPaint.setColor(color);
-            canvas.drawText(labelText.toString(), centerX, baseline, labelPaint);
-        }
-    }
 
     private void drawShadow(Canvas canvas, float bubbleX, float eased) {
         shadowPaint.setShadowLayer(shadowBlur, 0f, shadowDy, shadowColor);
