@@ -104,8 +104,8 @@ public class MorphNavBar extends View {
     private boolean hasAnyLabel = false;
     private float labelBaselineY = 0f;
 
-    private static final float DEFAULT_LABEL_SIZE_SP = 12f;
-    private static final float DEFAULT_LABEL_TOP_GAP_DP = 6f;
+    private static final float DEFAULT_LABEL_SIZE_SP = 14f;
+    private static final float DEFAULT_LABEL_TOP_GAP_DP = 2f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -140,7 +140,7 @@ public class MorphNavBar extends View {
         barRadius = dp(26f);
         barHeight = dp(72f);
         barSideMargin = dp(0f);
-        barBottomMargin = dp(0f);
+        barBottomMargin = dp(8f);
         bubbleDiameter = dp(92f);
         itemIconSize = dp(34f);
         shadowBlur = dp(12f);
@@ -149,7 +149,7 @@ public class MorphNavBar extends View {
 
         showLabels = true;
         labelTextSizePx = sp(DEFAULT_LABEL_SIZE_SP);
-        labelFontFamily = "Roboto Mono";
+        labelFontFamily = "sans-serif";
 
     }
 
@@ -216,10 +216,18 @@ public class MorphNavBar extends View {
 
 
     private void applyLabelTypeface() {
-        Typeface tf = Typeface.create(labelFontFamily, Typeface.NORMAL);
-        if (tf == null) {
-            tf = Typeface.MONOSPACE;
+        Typeface tf;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            tf = Typeface.create(Typeface.createFromFile(labelFontFamily), 800, false);
+        } else {
+            tf = Typeface.create(labelFontFamily, Typeface.BOLD);
         }
+
+        if (tf == null) {
+            tf = Typeface.DEFAULT_BOLD;
+        }
+
         labelPaint.setTypeface(tf);
     }
 
