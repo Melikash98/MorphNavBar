@@ -22,25 +22,15 @@ public final class LiquidTabItem {
     }
 
     @NonNull
-    public static LiquidTabItem of(@NonNull Drawable icon, @Nullable CharSequence contentDescription) {
-        return new LiquidTabItem(icon, null, contentDescription);
-    }
-
-    @NonNull
-    public static LiquidTabItem of(@NonNull Drawable icon, @NonNull Drawable selectedIcon,
+    public static LiquidTabItem of(@NonNull Drawable icon,
                                    @Nullable CharSequence contentDescription) {
-        return new LiquidTabItem(icon, selectedIcon, contentDescription);
-    }
-
-    @NonNull
-    public static LiquidTabItem of(@NonNull Drawable icon, @Nullable CharSequence contentDescription,
-                                   @Nullable CharSequence label) {
         return new LiquidTabItem(icon, null, contentDescription);
     }
 
     @NonNull
-    public static LiquidTabItem of(@NonNull Drawable icon, @NonNull Drawable selectedIcon,
-                                   @Nullable CharSequence contentDescription, @Nullable CharSequence label) {
+    public static LiquidTabItem of(@NonNull Drawable icon,
+                                   @NonNull Drawable selectedIcon,
+                                   @Nullable CharSequence contentDescription) {
         return new LiquidTabItem(icon, selectedIcon, contentDescription);
     }
 
