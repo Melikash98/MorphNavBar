@@ -105,7 +105,7 @@ public class MorphNavBar extends View {
     private float labelBaselineY = 0f;
 
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
-    private static final float DEFAULT_LABEL_TOP_GAP_DP = 5f;
+    private static final float DEFAULT_LABEL_TOP_GAP_DP = 10f;
     private static final float DEFAULT_LABEL_BOTTOM_GAP_DP = 10f;
 
 
@@ -445,11 +445,13 @@ public class MorphNavBar extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int desiredWidth = (int) Math.ceil(getPaddingLeft() + getPaddingRight() + dp(360));
+        float labelArea = getLabelAreaHeightPx();
         int desiredHeight = (int) Math.ceil(
                 getPaddingTop() + getPaddingBottom()
                         + barHeight
                         + bubbleDiameter * 0.30f
                         + barBottomMargin
+                        + labelArea
         );
         setMeasuredDimension(
                 resolveSize(desiredWidth, widthMeasureSpec),
@@ -461,14 +463,18 @@ public class MorphNavBar extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
 
+        float labelArea = getLabelAreaHeightPx();
+
         float left = getPaddingLeft() + barSideMargin;
         float right = w - getPaddingRight() - barSideMargin;
-        float bottom = h - getPaddingBottom() - barBottomMargin;
-        float top = bottom - barHeight;
+        float viewBottom = h - getPaddingBottom() - barBottomMargin;
 
-        barRect.set(left, top, right, bottom);
+        float barBottom = viewBottom - labelArea;
+        float barTop = barBottom - barHeight;
 
-        bubbleCenterY = top + bubbleDiameter * 0.5f;
+        barRect.set(left, barTop, right, barBottom);
+
+        bubbleCenterY = barTop + bubbleDiameter * 0.5f;
         activeIconY = bubbleCenterY;
         inactiveIconY = bubbleCenterY;
 
@@ -476,14 +482,16 @@ public class MorphNavBar extends View {
 
         if (showLabels && hasAnyLabel) {
             labelPaint.getFontMetrics(labelFontMetrics);
-            labelBaselineY = barRect.bottom - dp(DEFAULT_LABEL_BOTTOM_GAP_DP) - labelFontMetrics.bottom;
+            float labelTop = barBottom + dp(DEFAULT_LABEL_TOP_GAP_DP);
+            labelBaselineY = labelTop - labelFontMetrics.top;
         }
     }
 
     private float getLabelAreaHeightPx() {
         if (!showLabels || !hasAnyLabel) return 0f;
         labelPaint.getFontMetrics(labelFontMetrics);
-        return (labelFontMetrics.bottom - labelFontMetrics.top) + dp(DEFAULT_LABEL_TOP_GAP_DP);
+        float textHeight = labelFontMetrics.bottom - labelFontMetrics.top;
+        return dp(DEFAULT_LABEL_TOP_GAP_DP) + textHeight + dp(DEFAULT_LABEL_BOTTOM_GAP_DP);
     }
 
     private void rebuildCenters() {
@@ -706,7 +714,8 @@ public class MorphNavBar extends View {
     private int hitTest(float x, float y) {
         if (centerXs.isEmpty()) return -1;
         float top = barRect.top - bubbleDiameter * 0.35f;
-        float bottom = barRect.bottom;
+        float bottom = getHeight() - getPaddingBottom() - barBottomMargin;
+
         if (y < top || y > bottom) return -1;
 
         float segmentWidth = barRect.width() / items.size();
