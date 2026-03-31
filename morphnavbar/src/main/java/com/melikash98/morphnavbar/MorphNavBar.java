@@ -139,7 +139,7 @@ public class MorphNavBar extends View {
         activeIconColor = Color.WHITE;
 
         barRadius = dp(26f);
-        barHeight = dp(120f);
+        barHeight = dp(160f);
         barSideMargin = dp(0f);
         barBottomMargin = dp(16f);
         bubbleDiameter = dp(92f);
