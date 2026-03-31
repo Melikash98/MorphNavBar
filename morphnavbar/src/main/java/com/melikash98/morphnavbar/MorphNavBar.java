@@ -441,8 +441,8 @@ public class MorphNavBar extends View {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        float labelArea = getLabelAreaHeightPx();
         int desiredWidth = (int) Math.ceil(getPaddingLeft() + getPaddingRight() + dp(360));
+        float labelArea = getLabelAreaHeightPx();
         int desiredHeight = (int) Math.ceil(
                 getPaddingTop() + getPaddingBottom()
                         + barHeight
@@ -464,8 +464,8 @@ public class MorphNavBar extends View {
 
         float left = getPaddingLeft() + barSideMargin;
         float right = w - getPaddingRight() - barSideMargin;
-        float bottom = h - getPaddingBottom() - barBottomMargin - labelArea;
-        float top = bottom - barHeight;
+        float bottom = h - getPaddingBottom() - barBottomMargin;
+        float top = bottom - (barHeight + getLabelAreaHeightPx());
 
         barRect.set(left, top, right, bottom);
 
@@ -477,7 +477,7 @@ public class MorphNavBar extends View {
 
         if (showLabels && hasAnyLabel) {
             labelPaint.getFontMetrics(labelFontMetrics);
-            labelBaselineY = barRect.bottom + dp(DEFAULT_LABEL_TOP_GAP_DP) - labelFontMetrics.top;
+            labelBaselineY = barRect.bottom - dp(DEFAULT_LABEL_TOP_GAP_DP) - labelFontMetrics.bottom;
         }
     }
 
