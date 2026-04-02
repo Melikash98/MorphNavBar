@@ -3,7 +3,6 @@
     <declare-styleable name="MorphNavBarView">
         <attr name="lbv_barColor" format="color" />
         <attr name="lbv_shadowColor" format="color" />
-        <attr name="lbv_indicatorColor" format="color" />
         <attr name="lbv_selectedColor" format="color" />
         <attr name="lbv_unselectedColor" format="color" />
         <attr name="lbv_activeIconColor" format="color" />
@@ -15,8 +14,6 @@
         <attr name="lbv_barBottomMargin" format="dimension" />
         <attr name="lbv_bubbleDiameter" format="dimension" />
         <attr name="lbv_itemIconSize" format="dimension" />
-        <attr name="lbv_indicatorWidth" format="dimension" />
-        <attr name="lbv_indicatorHeight" format="dimension" />
         <attr name="lbv_shadowBlur" format="dimension" />
         <attr name="lbv_shadowDy" format="dimension" />
         <attr name="lbv_animationDuration" format="integer" />

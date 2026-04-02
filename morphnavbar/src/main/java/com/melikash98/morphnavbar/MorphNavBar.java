@@ -85,6 +85,7 @@ public class MorphNavBar extends View {
     private int selectedColor;
     private int inactiveIconColor;
     private int activeIconColor;
+    private int unselectedColor;
 
     private float barRadius;
     private float barHeight;
@@ -110,7 +111,7 @@ public class MorphNavBar extends View {
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
     private static final float DEFAULT_LABEL_TOP_GAP_DP = 3.5f;
     private float horizontalContentPadding = dp(10f);
-    private static final float LABEL_BOTTOM_PADDING_DP = 17f;
+    private static final float LABEL_BOTTOM_PADDING_DP = 26f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -141,6 +142,7 @@ public class MorphNavBar extends View {
         selectedColor = Color.parseColor("#00CFC0");
         inactiveIconColor = Color.parseColor("#00CFC0");
         activeIconColor = Color.WHITE;
+        unselectedColor = Color.parseColor("#00CFC0");
 
         barRadius = dp(26f);
         barHeight = dp(160f);
@@ -193,6 +195,7 @@ public class MorphNavBar extends View {
             badgeBackgroundColor = a.getColor(R.styleable.MorphNavBarView_lbv_badgeBackgroundColor, badgeBackgroundColor);
             badgeTextColor = a.getColor(R.styleable.MorphNavBarView_lbv_badgeTextColor, badgeTextColor);
             badgeTextSizePx = a.getDimension(R.styleable.MorphNavBarView_lbv_badgeTextSize, badgeTextSizePx);
+            unselectedColor = a.getColor(R.styleable.MorphNavBarView_lbv_unselectedColor, unselectedColor);
 
         } finally {
             a.recycle();
@@ -643,7 +646,7 @@ public class MorphNavBar extends View {
 
         float radius = barRadius;
         float pulse = (float) Math.sin(Math.PI * eased);
-        float bulgeDepth = dp(14f) + dp(10.5f) * pulse;
+        float bulgeDepth = dp(14f) + dp(12.5f) * pulse;
         float bumpWidth = bubbleDiameter * 1.38f;
         float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
         float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
