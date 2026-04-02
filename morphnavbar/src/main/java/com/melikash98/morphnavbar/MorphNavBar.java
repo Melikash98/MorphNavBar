@@ -111,7 +111,7 @@ public class MorphNavBar extends View {
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
     private static final float DEFAULT_LABEL_TOP_GAP_DP = 3f;
     private float horizontalContentPadding = dp(18f);
-    private static final float LABEL_BOTTOM_PADDING_DP = 24f;
+    private static final float LABEL_BOTTOM_PADDING_DP = 38f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -144,7 +144,7 @@ public class MorphNavBar extends View {
         activeIconColor = Color.WHITE;
 
         barRadius = dp(26f);
-        barHeight = dp(92f);
+        barHeight = dp(100f);
         barSideMargin = dp(0f);
         barBottomMargin = dp(0f);
         bubbleDiameter = dp(92f);
@@ -592,7 +592,7 @@ public class MorphNavBar extends View {
         if (!showLabels || !hasAnyLabel) return 0f;
         labelPaint.getFontMetrics(labelFontMetrics);
 
-        return (labelFontMetrics.bottom - labelFontMetrics.top) + dp(DEFAULT_LABEL_TOP_GAP_DP) + dp(LABEL_BOTTOM_PADDING_DP);
+        return (labelFontMetrics.bottom - labelFontMetrics.top) + dp(DEFAULT_LABEL_TOP_GAP_DP);
     }
 
     private void rebuildCenters() {
@@ -733,10 +733,13 @@ public class MorphNavBar extends View {
         if (!showLabels || !hasAnyLabel || items.isEmpty()) return;
         if (showLabelOnlyOnSelected) {
             if (fromIndex != toIndex) {
-                drawSingleLabel(canvas, fromIndex, 1f - eased, selectedColor);
-                drawSingleLabel(canvas, toIndex, eased, selectedColor);
+                drawSingleLabel(canvas, fromIndex, 1f - eased, selectedColor, labelBaselineY);
+
+                float startY = bubbleCenterY + dp(28f);
+                float currentY = lerp(startY, labelBaselineY, eased);
+                drawSingleLabel(canvas, toIndex, eased, selectedColor, currentY);
             } else {
-                drawSingleLabel(canvas, selectedIndex, 1f, selectedColor);
+                drawSingleLabel(canvas, selectedIndex, 1f, selectedColor, labelBaselineY);
             }
             return;
         }
@@ -774,7 +777,7 @@ public class MorphNavBar extends View {
             }
         }
     }
-    private void drawSingleLabel(Canvas canvas, int index, float alpha, @ColorInt int color) {
+    private void drawSingleLabel(Canvas canvas, int index, float alpha, @ColorInt int color, float yPosition) {
         if (index < 0 || index >= items.size()) return;
         LiquidTabItem.Model item = items.get(index);
         CharSequence label = item.getLabel();
@@ -787,7 +790,7 @@ public class MorphNavBar extends View {
         labelPaint.setAlpha((int) (255 * clamp(alpha, 0f, 1f)));
 
         CharSequence ellipsized = TextUtils.ellipsize(label, labelPaint, maxTextWidth, TextUtils.TruncateAt.END);
-        canvas.drawText(ellipsized.toString(), centerX, labelBaselineY, labelPaint);
+        canvas.drawText(ellipsized.toString(), centerX, yPosition, labelPaint);
 
         labelPaint.setAlpha(255);
     }
