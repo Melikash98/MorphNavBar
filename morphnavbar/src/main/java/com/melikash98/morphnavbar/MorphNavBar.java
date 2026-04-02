@@ -109,9 +109,9 @@ public class MorphNavBar extends View {
     private float labelBaselineY = 0f;
 
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
-    private static final float DEFAULT_LABEL_TOP_GAP_DP = 10f;
+    private static final float DEFAULT_LABEL_TOP_GAP_DP = 5f;
     private float horizontalContentPadding = dp(18f);
-    private static final float LABEL_BOTTOM_PADDING_DP = 38f;
+    private static final float LABEL_BOTTOM_PADDING_DP = 8f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -253,6 +253,7 @@ public class MorphNavBar extends View {
         badgeTextPaint.setTextSize(badgeTextSizePx);
         invalidate();
     }
+
     private void applyLabelTypeface() {
         Typeface tf = Typeface.create(labelFontFamily, Typeface.BOLD);
         if (tf == null) {
@@ -592,7 +593,7 @@ public class MorphNavBar extends View {
         if (!showLabels || !hasAnyLabel) return 0f;
         labelPaint.getFontMetrics(labelFontMetrics);
 
-        return (labelFontMetrics.bottom - labelFontMetrics.top) + dp(DEFAULT_LABEL_TOP_GAP_DP);
+        return (labelFontMetrics.bottom - labelFontMetrics.top) + dp(DEFAULT_LABEL_TOP_GAP_DP) + dp(LABEL_BOTTOM_PADDING_DP);
     }
 
     private void rebuildCenters() {
