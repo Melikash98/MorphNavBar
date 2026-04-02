@@ -193,7 +193,7 @@ public class MorphNavBar extends View {
 
             badgeBackgroundColor = a.getColor(R.styleable.MorphNavBarView_lbv_badgeBackgroundColor, badgeBackgroundColor);
             badgeTextColor = a.getColor(R.styleable.MorphNavBarView_lbv_badgeTextColor, badgeTextColor);
-            badgeTextSizePx = a.getDimension(R.styleable.MorphNavBarVieww_lbv_badgeTextSize, badgeTextSizePx);
+            badgeTextSizePx = a.getDimension(R.styleable.MorphNavBarView_lbv_badgeTextSize, badgeTextSizePx);
 
         } finally {
             a.recycle();
