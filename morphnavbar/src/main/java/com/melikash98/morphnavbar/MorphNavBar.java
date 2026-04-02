@@ -179,6 +179,9 @@ public class MorphNavBar extends View {
             showLabels = a.getBoolean(R.styleable.LiquidBottomNavigationView_lbv_showLabels, showLabels);
             labelTextSizePx = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_labelTextSize, labelTextSizePx);
 
+            showLabels = a.getBoolean(R.styleable.LiquidBottomNavigationView_lbv_showLabels, showLabels);
+            showLabelOnlyOnSelected = a.getBoolean(R.styleable.LiquidBottomNavigationView_lbv_showLabelOnlyOnSelected, false);
+
             String family = a.getString(R.styleable.LiquidBottomNavigationView_lbv_labelFontFamily);
             if (family != null && !family.trim().isEmpty()) {
                 labelFontFamily = family.trim();
@@ -312,6 +315,7 @@ public class MorphNavBar extends View {
     public void setOnTabSelectedListener(@Nullable OnTabSelectedListener listener) {
         this.listener = listener;
     }
+
     public void setCount(int tabIndex, String count) {
         if (tabIndex < 0 || tabIndex >= items.size()) return;
         if (count == null || count.trim().isEmpty()) {
@@ -340,6 +344,7 @@ public class MorphNavBar extends View {
     public void show(int tabIndex) {
         setSelectedIndex(tabIndex);
     }
+
     public void setShowLabelOnlyOnSelected(boolean enabled) {
         if (this.showLabelOnlyOnSelected == enabled) return;
         this.showLabelOnlyOnSelected = enabled;
@@ -805,6 +810,7 @@ public class MorphNavBar extends View {
                 return super.onTouchEvent(event);
         }
     }
+
     private void drawBadges(Canvas canvas) {
         if (badgeCounts.isEmpty() || items.isEmpty()) return;
 
