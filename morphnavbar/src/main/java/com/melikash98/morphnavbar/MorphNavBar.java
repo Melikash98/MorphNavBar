@@ -28,7 +28,10 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.graphics.ColorUtils;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 
+import com.melikash98.morphnavbar.Iinterface.ClickListener;
 import com.melikash98.morphnavbar.Iinterface.OnTabSelectedListener;
+import com.melikash98.morphnavbar.Iinterface.ReselectListener;
+import com.melikash98.morphnavbar.Iinterface.ShowListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,6 +61,9 @@ public class MorphNavBar extends View {
 
     private ValueAnimator animator;
     private OnTabSelectedListener listener;
+    private ClickListener clickListener;
+    private ShowListener showListener;
+    private ReselectListener reselectListener;
 
     private int selectedIndex = 0;
     private int fromIndex = 0;
@@ -221,6 +227,10 @@ public class MorphNavBar extends View {
         updateContentDescription();
         requestLayout();
         invalidate();
+
+        if (!items.isEmpty() && showListener != null) {
+            showListener.onShowItem(items.get(selectedIndex));
+        }
     }
 
     public void setTabs(@NonNull LiquidTabItem.Model... tabs) {
@@ -232,6 +242,10 @@ public class MorphNavBar extends View {
         updateContentDescription();
         requestLayout();
         invalidate();
+
+        if (!items.isEmpty() && showListener != null) {
+            showListener.onShowItem(items.get(selectedIndex));
+        }
     }
 
     public void add(@NonNull LiquidTabItem.Model tab) {
@@ -249,6 +263,10 @@ public class MorphNavBar extends View {
         rebuildCenters();
         requestLayout();
         invalidate();
+
+        if (!items.isEmpty() && showListener != null) {
+            showListener.onShowItem(items.get(selectedIndex));
+        }
     }
 
     public void clearTabs() {
@@ -263,7 +281,21 @@ public class MorphNavBar extends View {
         requestLayout();
         invalidate();
     }
+    public void setOnClickMenuListener(@Nullable ClickListener listener) {
+        this.clickListener = listener;
+    }
 
+    public void setOnShowListener(@Nullable ShowListener listener) {
+        this.showListener = listener;
+    }
+
+    public void setOnReselectListener(@Nullable ReselectListener listener) {
+        this.reselectListener = listener;
+    }
+
+    public void setOnTabSelectedListener(@Nullable OnTabSelectedListener listener) {
+        this.listener = listener;
+    }
     public int getSelectedIndex() {
         return selectedIndex;
     }
@@ -290,7 +322,11 @@ public class MorphNavBar extends View {
             toIndex = index;
             progress = 1f;
             updateContentDescription();
+
             if (listener != null) listener.onTabSelected(selectedIndex, items.get(selectedIndex));
+            if (showListener != null && !items.isEmpty()) {
+                showListener.onShowItem(items.get(selectedIndex));
+            }
             invalidate();
             return;
         }
@@ -327,6 +363,9 @@ public class MorphNavBar extends View {
 
                 if (listener != null && !items.isEmpty()) {
                     listener.onTabSelected(selectedIndex, items.get(selectedIndex));
+                }
+                if (showListener != null && !items.isEmpty()) {
+                    showListener.onShowItem(items.get(selectedIndex));
                 }
                 invalidate();
                 animator = null;
@@ -671,6 +710,7 @@ public class MorphNavBar extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (items.isEmpty()) return super.onTouchEvent(event);
+
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_MOVE:
@@ -678,7 +718,17 @@ public class MorphNavBar extends View {
             case MotionEvent.ACTION_UP:
                 int index = hitTest(event.getX(), event.getY());
                 if (index != -1) {
-                    setSelectedIndex(index, true);
+                    LiquidTabItem.Model item = items.get(index);
+                    if (clickListener != null) {
+                        clickListener.onClickItem(item);
+                    }
+                    if (index == selectedIndex) {
+                        if (reselectListener != null) {
+                            reselectListener.onReselectItem(item);
+                        }
+                    } else {
+                        setSelectedIndex(index, true);
+                    }
                     performClick();
                 }
                 return true;
