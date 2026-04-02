@@ -55,7 +55,6 @@ public class MorphNavBar extends View {
 
 
     private final RectF barRect = new RectF();
-    private final Path barPath = new Path();
     private final Path bubblePath = new Path();
 
     private final List<MorphNavTabItem.Model> items = new ArrayList<>();
@@ -109,9 +108,9 @@ public class MorphNavBar extends View {
     private float labelBaselineY = 0f;
 
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
-    private static final float DEFAULT_LABEL_TOP_GAP_DP = -2f;
-    private float horizontalContentPadding = dp(18f);
-    private static final float LABEL_BOTTOM_PADDING_DP = 18f;
+    private static final float DEFAULT_LABEL_TOP_GAP_DP = -4f;
+    private float horizontalContentPadding = dp(10f);
+    private static final float LABEL_BOTTOM_PADDING_DP = 10f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -612,93 +611,48 @@ public class MorphNavBar extends View {
 
         float startX = getCenterX(fromIndex);
         float endX = getCenterX(toIndex);
+        float eased = positionInterpolator.getInterpolation(progress);
+        float bubbleX = lerp(startX, endX, eased);
 
-        float moveT = easeOutBack(progress);
-        float morphT = smoothPulse(progress);
-
-        float bubbleX = lerp(startX, endX, moveT);
-        float floatY =
-                -dp(14f) * morphT
-                        + dp(6f) * (1f - progress);
-
-        float bubbleY = bubbleCenterY + floatY;
-
-        drawShadow(canvas, bubbleX, bubbleY, morphT);
-        drawBar(canvas, bubbleX, bubbleY, morphT);
+        drawShadow(canvas, bubbleX, eased);
+        drawBar(canvas, bubbleX, eased);
         drawInactiveIcons(canvas, bubbleX);
-        drawBubble(canvas, bubbleX, bubbleY, morphT);
-        drawActiveIcon(canvas, bubbleX, bubbleY, morphT);
+        drawBubble(canvas, bubbleX, eased);
+        drawActiveIcon(canvas, bubbleX, eased);
 
         if ((showLabels || showLabelOnlyOnSelected) && hasAnyLabel) {
-            drawLabels(canvas, bubbleX, morphT);
+            drawLabels(canvas, bubbleX, eased);
         }
-
         drawBadges(canvas);
     }
 
-    private static float clamp01(float v) {
-        return Math.max(0f, Math.min(1f, v));
-    }
 
-    private static float smoothPulse(float t) {
-        t = clamp01(t);
-        return (float)(Math.sin(Math.PI * t) * (1 + 0.3f * Math.sin(3 * Math.PI * t)));
-    }
-
-    private static float easeOutBack(float t) {
-        float c1 = 2.2f; // قبلاً 1.7 بود
-        float c3 = c1 + 1f;
-        float x = t - 1f;
-        return 1f + c3 * x * x * x + c1 * x * x;
-    }
-    private void drawShadow(Canvas canvas, float bubbleX, float bubbleY, float morphT) {
+    private void drawShadow(Canvas canvas, float bubbleX, float eased) {
         shadowPaint.setShadowLayer(shadowBlur, 0f, shadowDy, shadowColor);
-        canvas.drawPath(buildBarPath(bubbleX, bubbleY, morphT), shadowPaint);
+        canvas.drawPath(buildBarPath(bubbleX, eased), shadowPaint);
         shadowPaint.clearShadowLayer();
     }
 
-    private void drawBar(Canvas canvas, float bubbleX, float bubbleY, float morphT) {
-        canvas.drawPath(buildBarPath(bubbleX, bubbleY, morphT), barPaint);
+    private void drawBar(Canvas canvas, float bubbleX, float eased) {
+        canvas.drawPath(buildBarPath(bubbleX, eased), barPaint);
     }
 
-    private Path buildBarPath(float bubbleX, float bubbleY, float morphT) {
+    private Path buildBarPath(float bubbleX, float eased) {
         Path path = new Path();
+        float left = barRect.left, top = barRect.top, right = barRect.right, bottom = barRect.bottom;
 
-        float left = barRect.left;
-        float top = barRect.top;
-        float right = barRect.right;
-        float bottom = barRect.bottom;
         float radius = barRadius;
-
-        float startX = getCenterX(fromIndex);
-        float endX = getCenterX(toIndex);
-        float dir = Math.signum(endX - startX);
-        if (dir == 0f) dir = 1f;
-
-        float pulse = smoothPulse(progress);
-        float bulgeDepth = dp(20f) + dp(16f) * pulse;
-
-        float bumpWidth = bubbleDiameter * (1.08f + 0.10f * pulse);
-        float bumpCenter = bubbleX + dir * dp(3f) * pulse;
-        float bumpLeft = Math.max(left + radius * 0.8f, bumpCenter - bumpWidth * 0.50f);
-        float bumpRight = Math.min(right - radius * 0.8f, bumpCenter + bumpWidth * 0.50f);
+        float pulse = (float) Math.sin(Math.PI * eased);
+        float bulgeDepth = dp(12f) + dp(6.5f) * pulse;
+        float bumpWidth = bubbleDiameter * 1.38f;
+        float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
+        float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
         float bulgeTop = top - bulgeDepth;
 
         path.moveTo(left + radius, top);
         path.lineTo(bumpLeft, top);
-
-        path.cubicTo(
-                bumpLeft + bumpWidth * 0.18f, top,
-                bumpCenter - bumpWidth * 0.20f, bulgeTop,
-                bumpCenter, bulgeTop
-        );
-
-        path.cubicTo(
-                bumpCenter + bumpWidth * 0.20f, bulgeTop,
-                bumpRight - bumpWidth * 0.18f, top,
-                bumpRight, top
-        );
-
+        path.cubicTo(bumpLeft + bumpWidth * 0.25f, top, bubbleX - bumpWidth * 0.19f, bulgeTop, bubbleX, bulgeTop);
+        path.cubicTo(bubbleX + bumpWidth * 0.19f, bulgeTop, bumpRight - bumpWidth * 0.25f, top, bumpRight, top);
         path.lineTo(right - radius, top);
         path.quadTo(right, top, right, top + radius);
         path.lineTo(right, bottom);
@@ -706,10 +660,8 @@ public class MorphNavBar extends View {
         path.lineTo(left, top + radius);
         path.quadTo(left, top, left + radius, top);
         path.close();
-
         return path;
     }
-
 
     private void drawInactiveIcons(Canvas canvas, float bubbleX) {
         float influenceRadius = bubbleDiameter * 0.9f;
@@ -727,104 +679,49 @@ public class MorphNavBar extends View {
         }
     }
 
-    private void drawBubble(Canvas canvas, float bubbleX, float bubbleY, float morphT) {
+    private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
+        float pulse = (float) Math.sin(Math.PI * eased);
+        float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased);
+        float mainRadiusX = r * stretchFactor * (0.97f - 0.03f * pulse);
+        float mainRadiusY = r * (0.97f - 0.03f * pulse);
+        float mainY = bubbleCenterY + dp(1.8f);
+        float crestRadius = r * (0.48f + 0.14f * pulse);
+        float crestY = bubbleCenterY - r * (0.34f + 0.07f * pulse);
 
-        float startX = getCenterX(fromIndex);
-        float endX = getCenterX(toIndex);
-        float dx = endX - startX;
-        float dir = Math.signum(dx);
-        if (dir == 0f) dir = 1f;
+        Path main = new Path();
+        main.addOval(bubbleX - mainRadiusX, mainY - mainRadiusY, bubbleX + mainRadiusX, mainY + mainRadiusY, Path.Direction.CW);
 
-        float travel = Math.abs(dx);
-
-        float bodyRx = r * (0.92f + 0.10f * morphT);
-        float bodyRy = r * (0.88f + 0.06f * morphT);
-
-        float leadRx = r * (0.50f + 0.16f * morphT);
-        float leadRy = r * (0.45f + 0.10f * morphT);
-
-        float tailRx = r * (0.38f + 0.08f * morphT);
-        float tailRy = r * (0.33f + 0.06f * morphT);
-
-        float leadX = bubbleX + dir * (r * 0.9f + travel * 0.12f * morphT);
-        float tailX = bubbleX - dir * (r * 0.7f + travel * 0.22f * morphT);
-
-        float floatLift = dp(1.2f) * morphT;
-        float drawY = bubbleY - floatLift;
-
-        Path body = new Path();
-        body.addOval(
-                bubbleX - bodyRx, drawY - bodyRy,
-                bubbleX + bodyRx, drawY + bodyRy,
-                Path.Direction.CW
-        );
-
-        Path lead = new Path();
-        lead.addOval(
-                leadX - leadRx, drawY - leadRy,
-                leadX + leadRx, drawY + leadRy,
-                Path.Direction.CW
-        );
-
-        Path tail = new Path();
-        tail.addOval(
-                tailX - tailRx, drawY - tailRy,
-                tailX + tailRx, drawY + tailRy,
-                Path.Direction.CW
-        );
+        Path crest = new Path();
+        crest.addCircle(bubbleX, crestY, crestRadius, Path.Direction.CW);
 
         bubblePath.reset();
-        bubblePath.set(body);
-
+        bubblePath.set(main);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            bubblePath.op(lead, Path.Op.UNION);
-            bubblePath.op(tail, Path.Op.UNION);
+            bubblePath.op(crest, Path.Op.UNION);
         } else {
-            bubblePath.addPath(lead);
-            bubblePath.addPath(tail);
+            bubblePath.addPath(crest);
         }
-
         canvas.drawPath(bubblePath, bubblePaint);
 
-        if (morphT > 0.08f) {
-            float highlightR = r * 0.22f * morphT;
-            canvas.drawCircle(
-                    bubbleX + dir * r * 0.18f,
-                    drawY - r * 0.22f,
-                    highlightR,
-                    bubblePaint
-            );
+        if (eased > 0.05f && eased < 0.95f) {
+            float highlightRadius = r * 0.21f * pulse;
+            canvas.drawCircle(bubbleX, crestY - highlightRadius * 0.22f, highlightRadius, bubblePaint);
         }
     }
 
-    private void drawActiveIcon(Canvas canvas, float bubbleX, float bubbleY, float morphT) {
-        if (items.isEmpty()) return;
-
-        float fromAlpha = 1f - clamp01((progress - 0.12f) / 0.40f);
-        float toAlpha = clamp01((progress - 0.35f) / 0.45f);
-
-        float scale = 1f + 0.08f * morphT;
-
-        if (fromIndex >= 0 && fromIndex < items.size()) {
-            MorphNavTabItem.Model fromItem = items.get(fromIndex);
-            Drawable fromIcon = fromItem.getSelectedIconResId() != 0
-                    ? loadDrawable(fromItem.getSelectedIconResId())
-                    : loadDrawable(fromItem.getIconResId());
-            if (fromIcon != null && fromAlpha > 0f) {
-                drawDrawable(canvas, fromIcon, bubbleX, bubbleY, activeIconColor, fromAlpha, scale);
-            }
+    private void drawActiveIcon(Canvas canvas, float bubbleX, float eased) {
+        int iconIndex = eased < 0.5f ? fromIndex : toIndex;
+        if (iconIndex < 0 || iconIndex >= items.size()) return;
+        MorphNavTabItem.Model item = items.get(iconIndex);
+        float scale = 1f + 0.085f * (float) Math.sin(Math.PI * eased);
+        Drawable icon = item.getSelectedIconResId() != 0
+                ? loadDrawable(item.getSelectedIconResId())
+                : loadDrawable(item.getIconResId());
+        if (icon != null) {
+            drawDrawable(canvas, icon, bubbleX, activeIconY, activeIconColor, 1f, scale);
         }
 
-        if (toIndex >= 0 && toIndex < items.size() && toIndex != fromIndex) {
-            MorphNavTabItem.Model toItem = items.get(toIndex);
-            Drawable toIcon = toItem.getSelectedIconResId() != 0
-                    ? loadDrawable(toItem.getSelectedIconResId())
-                    : loadDrawable(toItem.getIconResId());
-            if (toIcon != null && toAlpha > 0f) {
-                drawDrawable(canvas, toIcon, bubbleX, bubbleY, activeIconColor, toAlpha, scale);
-            }
-        }
     }
 
     private void drawDrawable(Canvas canvas, @NonNull Drawable drawable, float centerX, float centerY,
@@ -832,11 +729,10 @@ public class MorphNavBar extends View {
         drawDrawable(canvas, drawable, centerX, centerY, tint, alpha, 1f);
     }
 
-    private void drawLabels(Canvas canvas, float bubbleX, float morphT) {
+    private void drawLabels(Canvas canvas, float bubbleX, float eased) {
         if (!showLabels || !hasAnyLabel || items.isEmpty()) return;
-
         if (showLabelOnlyOnSelected) {
-            int labelIndex = progress < 0.5f ? fromIndex : toIndex;
+            int labelIndex = eased < 0.5f ? fromIndex : toIndex;
             if (labelIndex < 0 || labelIndex >= items.size()) return;
 
             MorphNavTabItem.Model item = items.get(labelIndex);
@@ -855,7 +751,6 @@ public class MorphNavBar extends View {
             canvas.drawText(ellipsized.toString(), centerX, labelBaselineY, labelPaint);
             return;
         }
-
         float influenceRadius = bubbleDiameter * 0.9f;
         float segmentWidth = barRect.width() / Math.max(1, items.size());
         float maxTextWidth = segmentWidth - dp(10f);
@@ -867,10 +762,10 @@ public class MorphNavBar extends View {
 
             float centerX = centerXs.get(i);
             float distance = Math.abs(centerX - bubbleX);
-            float t = clamp01(1f - (distance / influenceRadius));
-            float localEased = positionInterpolator.getInterpolation(t); // ✅ UPDATED
+            float t = clamp(1f - (distance / influenceRadius), 0f, 1f);
+            eased = positionInterpolator.getInterpolation(t);
 
-            int color = ColorUtils.blendARGB(inactiveIconColor, selectedColor, localEased); // ✅ UPDATED
+            int color = ColorUtils.blendARGB(inactiveIconColor, selectedColor, eased);
             labelPaint.setColor(color);
 
             CharSequence ellipsized = TextUtils.ellipsize(
@@ -896,16 +791,12 @@ public class MorphNavBar extends View {
         d.setTint(tint);
         int size = Math.round(itemIconSize * scale);
         int half = size / 2;
-
-        d.setBounds(
-                Math.round(centerX) - half,
-                Math.round(centerY) - half,
-                Math.round(centerX) + half,
-                Math.round(centerY) + half
-        );
-
+        d.setBounds(Math.round(centerX) - half, Math.round(centerY) - half,
+                Math.round(centerX) + half, Math.round(centerY) + half);
+        int oldAlpha = d.getAlpha();
         d.setAlpha((int) (255f * clamp(alpha, 0f, 1f)));
         d.draw(canvas);
+        d.setAlpha(oldAlpha);
     }
 
 
