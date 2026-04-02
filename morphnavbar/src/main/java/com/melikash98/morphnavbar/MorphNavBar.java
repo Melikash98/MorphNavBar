@@ -109,9 +109,9 @@ public class MorphNavBar extends View {
     private float labelBaselineY = 0f;
 
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
-    private static final float DEFAULT_LABEL_TOP_GAP_DP = -2f;
+    private static final float DEFAULT_LABEL_TOP_GAP_DP = 3f;
     private float horizontalContentPadding = dp(18f);
-    private static final float LABEL_BOTTOM_PADDING_DP = 18f;
+    private static final float LABEL_BOTTOM_PADDING_DP = 24f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -732,25 +732,15 @@ public class MorphNavBar extends View {
     private void drawLabels(Canvas canvas, float bubbleX, float eased) {
         if (!showLabels || !hasAnyLabel || items.isEmpty()) return;
         if (showLabelOnlyOnSelected) {
-            int labelIndex = eased < 0.5f ? fromIndex : toIndex;
-            if (labelIndex < 0 || labelIndex >= items.size()) return;
-
-            LiquidTabItem.Model item = items.get(labelIndex);
-            CharSequence label = item.getLabel();
-            if (label == null || label.length() == 0) return;
-
-            float centerX = centerXs.get(labelIndex);
-            labelPaint.setColor(selectedColor);
-
-            float segmentWidth = barRect.width() / Math.max(1, items.size());
-            float maxTextWidth = segmentWidth - dp(10f);
-
-            CharSequence ellipsized = TextUtils.ellipsize(
-                    label, labelPaint, maxTextWidth, TextUtils.TruncateAt.END);
-
-            canvas.drawText(ellipsized.toString(), centerX, labelBaselineY, labelPaint);
+            if (fromIndex != toIndex) {
+                drawSingleLabel(canvas, fromIndex, 1f - eased, selectedColor);
+                drawSingleLabel(canvas, toIndex, eased, selectedColor);
+            } else {
+                drawSingleLabel(canvas, selectedIndex, 1f, selectedColor);
+            }
             return;
         }
+
         float influenceRadius = bubbleDiameter * 0.9f;
         float segmentWidth = barRect.width() / Math.max(1, items.size());
         float maxTextWidth = segmentWidth - dp(10f);
@@ -763,22 +753,44 @@ public class MorphNavBar extends View {
             float centerX = centerXs.get(i);
             float distance = Math.abs(centerX - bubbleX);
             float t = clamp(1f - (distance / influenceRadius), 0f, 1f);
-            eased = positionInterpolator.getInterpolation(t);
+            float labelEased = positionInterpolator.getInterpolation(t);
 
-            int color = ColorUtils.blendARGB(inactiveIconColor, selectedColor, eased);
-            labelPaint.setColor(color);
+            CharSequence ellipsized = TextUtils.ellipsize(label, labelPaint, maxTextWidth, TextUtils.TruncateAt.END);
+            String text = ellipsized.toString();
+            float textWidth = labelPaint.measureText(text);
+            float textLeft = centerX - textWidth / 2f;
 
-            CharSequence ellipsized = TextUtils.ellipsize(
-                    label,
-                    labelPaint,
-                    maxTextWidth,
-                    TextUtils.TruncateAt.END
-            );
+            labelPaint.setColor(inactiveIconColor);
+            canvas.drawText(text, centerX, labelBaselineY, labelPaint);
 
-            canvas.drawText(ellipsized.toString(), centerX, labelBaselineY, labelPaint);
+            if (labelEased > 0.01f) {
+                labelPaint.setColor(selectedColor);
+                canvas.save();
+                canvas.clipRect(textLeft, labelBaselineY + labelFontMetrics.top,
+                        textLeft + textWidth * labelEased,
+                        labelBaselineY + labelFontMetrics.bottom);
+                canvas.drawText(text, centerX, labelBaselineY, labelPaint);
+                canvas.restore();
+            }
         }
     }
+    private void drawSingleLabel(Canvas canvas, int index, float alpha, @ColorInt int color) {
+        if (index < 0 || index >= items.size()) return;
+        LiquidTabItem.Model item = items.get(index);
+        CharSequence label = item.getLabel();
+        if (label == null || label.length() == 0) return;
 
+        float centerX = centerXs.get(index);
+        float maxTextWidth = (barRect.width() / Math.max(1, items.size())) - dp(10f);
+
+        labelPaint.setColor(color);
+        labelPaint.setAlpha((int) (255 * clamp(alpha, 0f, 1f)));
+
+        CharSequence ellipsized = TextUtils.ellipsize(label, labelPaint, maxTextWidth, TextUtils.TruncateAt.END);
+        canvas.drawText(ellipsized.toString(), centerX, labelBaselineY, labelPaint);
+
+        labelPaint.setAlpha(255);
+    }
     @Nullable
     private Drawable loadDrawable(@DrawableRes int resId) {
         if (resId == 0) return null;
