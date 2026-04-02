@@ -141,7 +141,7 @@ public class MorphNavBar extends View {
         activeIconColor = Color.WHITE;
 
         barRadius = dp(26f);
-        barHeight = dp(78f);
+        barHeight = dp(92f);
         barSideMargin = dp(0f);
         barBottomMargin = dp(0f);
         bubbleDiameter = dp(92f);
@@ -537,7 +537,7 @@ public class MorphNavBar extends View {
 
         float radius = barRadius;
         float pulse = (float) Math.sin(Math.PI * eased);
-        float bulgeDepth = dp(13f) + dp(5.5f) * pulse;
+        float bulgeDepth = dp(14f) + dp(7f) * pulse;
         float bumpWidth = bubbleDiameter * 1.38f;
         float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
         float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
