@@ -533,10 +533,11 @@ public class MorphNavBar extends View {
 
     private Path buildBarPath(float bubbleX, float eased) {
         Path path = new Path();
-        float left = barRect.left, top = barRect.top, right = barRect.right;
+        float left = barRect.left, top = barRect.top, right = barRect.right, bottom = barRect.bottom;
+
         float radius = barRadius;
         float pulse = (float) Math.sin(Math.PI * eased);
-        float bulgeDepth = dp(9f) + dp(4.5f) * pulse;
+        float bulgeDepth = dp(13f) + dp(5.5f) * pulse;
         float bumpWidth = bubbleDiameter * 1.38f;
         float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
         float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
@@ -548,6 +549,8 @@ public class MorphNavBar extends View {
         path.cubicTo(bubbleX + bumpWidth * 0.19f, bulgeTop, bumpRight - bumpWidth * 0.25f, top, bumpRight, top);
         path.lineTo(right - radius, top);
         path.quadTo(right, top, right, top + radius);
+        path.lineTo(right, bottom);
+        path.lineTo(left, bottom);
         path.lineTo(left, top + radius);
         path.quadTo(left, top, left + radius, top);
         path.close();
