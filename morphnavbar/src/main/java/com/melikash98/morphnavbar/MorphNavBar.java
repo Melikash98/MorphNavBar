@@ -487,7 +487,8 @@ public class MorphNavBar extends View {
     private float getLabelAreaHeightPx() {
         if (!showLabels || !hasAnyLabel) return 0f;
         labelPaint.getFontMetrics(labelFontMetrics);
-        return (labelFontMetrics.bottom - labelFontMetrics.top) + dp(DEFAULT_LABEL_TOP_GAP_DP);
+
+        return (labelFontMetrics.bottom - labelFontMetrics.top) + dp(DEFAULT_LABEL_TOP_GAP_DP) + dp(LABEL_BOTTOM_PADDING_DP);
     }
 
     private void rebuildCenters() {
@@ -537,7 +538,7 @@ public class MorphNavBar extends View {
 
         float radius = barRadius;
         float pulse = (float) Math.sin(Math.PI * eased);
-        float bulgeDepth = dp(14f) + dp(7f) * pulse;
+        float bulgeDepth = dp(12f) + dp(6.5f) * pulse;
         float bumpWidth = bubbleDiameter * 1.38f;
         float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
         float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
