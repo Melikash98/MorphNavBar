@@ -24,5 +24,8 @@
         <attr name="lbv_showLabels" format="boolean" />
         <attr name="lbv_labelTextSize" format="dimension" />
         <attr name="lbv_labelFontFamily" format="string" />
+
+        <attr name="lbv_showLabelOnlyOnSelected" format="boolean" />
+
     </declare-styleable>
 </resources>

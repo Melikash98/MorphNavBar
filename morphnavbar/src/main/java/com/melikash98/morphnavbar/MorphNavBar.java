@@ -35,7 +35,9 @@ import com.melikash98.morphnavbar.Iinterface.ShowListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class MorphNavBar extends View {
@@ -48,6 +50,8 @@ public class MorphNavBar extends View {
     private final Paint activeIconPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final TextPaint labelPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final Paint.FontMetrics labelFontMetrics = new Paint.FontMetrics();
+    private final Paint badgePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final TextPaint badgeTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
 
 
     private final RectF barRect = new RectF();
@@ -56,6 +60,7 @@ public class MorphNavBar extends View {
 
     private final List<LiquidTabItem.Model> items = new ArrayList<>();
     private final List<Float> centerXs = new ArrayList<>();
+    private final Map<Integer, String> badgeCounts = new HashMap<>();
 
     private final FastOutSlowInInterpolator positionInterpolator = new FastOutSlowInInterpolator();
 
@@ -64,6 +69,8 @@ public class MorphNavBar extends View {
     private ClickListener clickListener;
     private ShowListener showListener;
     private ReselectListener reselectListener;
+
+    private boolean showLabelOnlyOnSelected = false;
 
     private int selectedIndex = 0;
     private int fromIndex = 0;
@@ -98,7 +105,7 @@ public class MorphNavBar extends View {
     private float labelBaselineY = 0f;
 
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
-    private static final float DEFAULT_LABEL_TOP_GAP_DP =-2f;
+    private static final float DEFAULT_LABEL_TOP_GAP_DP = -2f;
     private float horizontalContentPadding = dp(18f);
     private static final float LABEL_BOTTOM_PADDING_DP = 18f;
 
@@ -143,6 +150,7 @@ public class MorphNavBar extends View {
         animationDuration = DEFAULT_ANIMATION_DURATION;
 
         showLabels = true;
+        showLabelOnlyOnSelected = false;
         labelTextSizePx = sp(DEFAULT_LABEL_SIZE_SP);
         labelFontFamily = "sans-serif";
 
@@ -207,6 +215,13 @@ public class MorphNavBar extends View {
         labelPaint.setTextSize(labelTextSizePx);
         labelPaint.setColor(inactiveIconColor);
         applyLabelTypeface();
+
+        badgePaint.setStyle(Paint.Style.FILL);
+        badgePaint.setColor(Color.RED);
+        badgeTextPaint.setTextAlign(Paint.Align.CENTER);
+        badgeTextPaint.setColor(Color.WHITE);
+        badgeTextPaint.setTextSize(sp(10f));
+        badgeTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
     }
 
 
@@ -281,6 +296,7 @@ public class MorphNavBar extends View {
         requestLayout();
         invalidate();
     }
+
     public void setOnClickMenuListener(@Nullable ClickListener listener) {
         this.clickListener = listener;
     }
@@ -296,6 +312,41 @@ public class MorphNavBar extends View {
     public void setOnTabSelectedListener(@Nullable OnTabSelectedListener listener) {
         this.listener = listener;
     }
+    public void setCount(int tabIndex, String count) {
+        if (tabIndex < 0 || tabIndex >= items.size()) return;
+        if (count == null || count.trim().isEmpty()) {
+            badgeCounts.remove(tabIndex);
+        } else {
+            badgeCounts.put(tabIndex, count.trim());
+        }
+        invalidate();
+    }
+
+    public void setCount(int tabIndex, int count) {
+        setCount(tabIndex, String.valueOf(count));
+    }
+
+    public void clearCount(int tabIndex) {
+        if (tabIndex < 0 || tabIndex >= items.size()) return;
+        badgeCounts.remove(tabIndex);
+        invalidate();
+    }
+
+    public void clearAllCounts() {
+        badgeCounts.clear();
+        invalidate();
+    }
+
+    public void show(int tabIndex) {
+        setSelectedIndex(tabIndex);
+    }
+    public void setShowLabelOnlyOnSelected(boolean enabled) {
+        if (this.showLabelOnlyOnSelected == enabled) return;
+        this.showLabelOnlyOnSelected = enabled;
+        requestLayout();
+        invalidate();
+    }
+
     public int getSelectedIndex() {
         return selectedIndex;
     }
@@ -455,7 +506,6 @@ public class MorphNavBar extends View {
             setContentDescription(null);
             return;
         }
-
         LiquidTabItem.Model item = items.get(selectedIndex);
         CharSequence cd = item.getContentDescription();
         if (cd != null && cd.length() > 0) {
@@ -487,7 +537,6 @@ public class MorphNavBar extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-
         float labelArea = getLabelAreaHeightPx();
 
         float left = getPaddingLeft() + barSideMargin;
@@ -503,7 +552,7 @@ public class MorphNavBar extends View {
 
         rebuildCenters();
 
-        if (showLabels && hasAnyLabel) {
+        if ((showLabels || showLabelOnlyOnSelected) && hasAnyLabel) {
             labelPaint.getFontMetrics(labelFontMetrics);
             labelBaselineY = barRect.bottom - dp(LABEL_BOTTOM_PADDING_DP) - labelFontMetrics.bottom;
         }
@@ -541,9 +590,10 @@ public class MorphNavBar extends View {
         drawBubble(canvas, bubbleX, eased);
         drawActiveIcon(canvas, bubbleX, eased);
 
-        if (showLabels && hasAnyLabel) {
-            drawLabels(canvas, bubbleX);
+        if ((showLabels || showLabelOnlyOnSelected) && hasAnyLabel) {
+            drawLabels(canvas, bubbleX, eased);
         }
+        drawBadges(canvas);
     }
 
 
@@ -649,9 +699,28 @@ public class MorphNavBar extends View {
         drawDrawable(canvas, drawable, centerX, centerY, tint, alpha, 1f);
     }
 
-    private void drawLabels(Canvas canvas, float bubbleX) {
+    private void drawLabels(Canvas canvas, float bubbleX, float eased) {
         if (!showLabels || !hasAnyLabel || items.isEmpty()) return;
+        if (showLabelOnlyOnSelected) {
+            int labelIndex = eased < 0.5f ? fromIndex : toIndex;
+            if (labelIndex < 0 || labelIndex >= items.size()) return;
 
+            LiquidTabItem.Model item = items.get(labelIndex);
+            CharSequence label = item.getLabel();
+            if (label == null || label.length() == 0) return;
+
+            float centerX = centerXs.get(labelIndex);
+            labelPaint.setColor(selectedColor);
+
+            float segmentWidth = barRect.width() / Math.max(1, items.size());
+            float maxTextWidth = segmentWidth - dp(10f);
+
+            CharSequence ellipsized = TextUtils.ellipsize(
+                    label, labelPaint, maxTextWidth, TextUtils.TruncateAt.END);
+
+            canvas.drawText(ellipsized.toString(), centerX, labelBaselineY, labelPaint);
+            return;
+        }
         float influenceRadius = bubbleDiameter * 0.9f;
         float segmentWidth = barRect.width() / Math.max(1, items.size());
         float maxTextWidth = segmentWidth - dp(10f);
@@ -664,7 +733,7 @@ public class MorphNavBar extends View {
             float centerX = centerXs.get(i);
             float distance = Math.abs(centerX - bubbleX);
             float t = clamp(1f - (distance / influenceRadius), 0f, 1f);
-            float eased = positionInterpolator.getInterpolation(t);
+            eased = positionInterpolator.getInterpolation(t);
 
             int color = ColorUtils.blendARGB(inactiveIconColor, selectedColor, eased);
             labelPaint.setColor(color);
@@ -719,13 +788,11 @@ public class MorphNavBar extends View {
                 int index = hitTest(event.getX(), event.getY());
                 if (index != -1) {
                     LiquidTabItem.Model item = items.get(index);
-                    if (clickListener != null) {
-                        clickListener.onClickItem(item);
-                    }
+
+                    if (clickListener != null) clickListener.onClickItem(item);
+
                     if (index == selectedIndex) {
-                        if (reselectListener != null) {
-                            reselectListener.onReselectItem(item);
-                        }
+                        if (reselectListener != null) reselectListener.onReselectItem(item);
                     } else {
                         setSelectedIndex(index, true);
                     }
@@ -738,6 +805,38 @@ public class MorphNavBar extends View {
                 return super.onTouchEvent(event);
         }
     }
+    private void drawBadges(Canvas canvas) {
+        if (badgeCounts.isEmpty() || items.isEmpty()) return;
+
+        float eased = positionInterpolator.getInterpolation(progress);
+        float bubbleX = lerp(getCenterX(fromIndex), getCenterX(toIndex), eased);
+
+        float badgeRadius = dp(9.5f);
+        float badgeOffsetX = itemIconSize * 0.38f;
+        float badgeOffsetY = -itemIconSize * 0.35f;
+
+        for (int i = 0; i < items.size(); i++) {
+            String count = badgeCounts.get(i);
+            if (count == null || count.isEmpty()) continue;
+
+            float iconCenterX = centerXs.get(i);
+            float iconCenterY = inactiveIconY;
+
+            if (i == selectedIndex) {
+                iconCenterX = bubbleX;
+                iconCenterY = activeIconY;
+            }
+
+            float badgeCenterX = iconCenterX + badgeOffsetX;
+            float badgeCenterY = iconCenterY + badgeOffsetY;
+
+            canvas.drawCircle(badgeCenterX, badgeCenterY, badgeRadius, badgePaint);
+
+            float textY = badgeCenterY + (badgeTextPaint.getTextSize() * 0.35f);
+            canvas.drawText(count, badgeCenterX, textY, badgeTextPaint);
+        }
+    }
+
 
     @Override
     public boolean performClick() {
@@ -786,5 +885,9 @@ public class MorphNavBar extends View {
         fromIndex = 0;
         toIndex = 0;
         progress = 1f;
+
+        if (!items.isEmpty() && showListener != null) {
+            showListener.onShowItem(items.get(selectedIndex));
+        }
     }
 }
