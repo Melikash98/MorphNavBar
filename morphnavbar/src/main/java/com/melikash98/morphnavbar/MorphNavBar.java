@@ -41,7 +41,7 @@ import java.util.Map;
 
 
 public class MorphNavBar extends View {
-    private static final int DEFAULT_ANIMATION_DURATION = 420;
+    private static final int DEFAULT_ANIMATION_DURATION = 320;
 
     private final Paint barPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -110,8 +110,8 @@ public class MorphNavBar extends View {
 
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
     private static final float DEFAULT_LABEL_TOP_GAP_DP = -2f;
-    private float horizontalContentPadding = dp(14f);
-    private static final float LABEL_BOTTOM_PADDING_DP = 14f;
+    private float horizontalContentPadding = dp(18f);
+    private static final float LABEL_BOTTOM_PADDING_DP = 18f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -615,15 +615,12 @@ public class MorphNavBar extends View {
         float eased = positionInterpolator.getInterpolation(progress);
         float bubbleX = lerp(startX, endX, eased);
 
-        // ==== انیمیشن مایع + شناور بدون هیچ جامپی ====
-        float detachFactor = (float) Math.sin(Math.PI * eased);   // 0 → 1 → 0 (نرم)
-        float bulgeFactor = 1f - detachFactor;                    // حداکثر در ابتدا/انتها، صفر در وسط
-
-        drawShadow(canvas, bubbleX, eased, bulgeFactor);
-        drawBar(canvas, bubbleX, eased, bulgeFactor);
+        drawShadow(canvas, bubbleX, eased);
+        drawBar(canvas, bubbleX, eased);
         drawInactiveIcons(canvas, bubbleX);
-        drawBubble(canvas, bubbleX, eased, bulgeFactor, detachFactor);
-        drawActiveIcon(canvas, bubbleX, eased, detachFactor);   // ← جدید: lift هم اعمال می‌شه
+        drawBubble(canvas, bubbleX, eased);
+        drawActiveIcon(canvas, bubbleX, eased);
+
         if ((showLabels || showLabelOnlyOnSelected) && hasAnyLabel) {
             drawLabels(canvas, bubbleX, eased);
         }
@@ -631,28 +628,26 @@ public class MorphNavBar extends View {
     }
 
 
-    private void drawShadow(Canvas canvas, float bubbleX, float eased, float bulgeFactor) {
+    private void drawShadow(Canvas canvas, float bubbleX, float eased) {
         shadowPaint.setShadowLayer(shadowBlur, 0f, shadowDy, shadowColor);
-        canvas.drawPath(buildBarPath(bubbleX, eased, bulgeFactor), shadowPaint);
+        canvas.drawPath(buildBarPath(bubbleX, eased), shadowPaint);
         shadowPaint.clearShadowLayer();
     }
 
-    private void drawBar(Canvas canvas, float bubbleX, float eased, float bulgeFactor) {
-        canvas.drawPath(buildBarPath(bubbleX, eased, bulgeFactor), barPaint);
+    private void drawBar(Canvas canvas, float bubbleX, float eased) {
+        canvas.drawPath(buildBarPath(bubbleX, eased), barPaint);
     }
 
-    private Path buildBarPath(float bubbleX, float eased, float bulgeFactor) {
+    private Path buildBarPath(float bubbleX, float eased) {
         Path path = new Path();
         float left = barRect.left, top = barRect.top, right = barRect.right, bottom = barRect.bottom;
+
         float radius = barRadius;
-
         float pulse = (float) Math.sin(Math.PI * eased);
-        float bulgeDepth = (dp(12f) + dp(6.5f) * pulse) * bulgeFactor;   // ← bulge فقط در ابتدا/انتها
-
+        float bulgeDepth = dp(12f) + dp(6.5f) * pulse;
         float bumpWidth = bubbleDiameter * 1.38f;
         float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
         float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
-
         float bulgeTop = top - bulgeDepth;
 
         path.moveTo(left + radius, top);
@@ -685,22 +680,15 @@ public class MorphNavBar extends View {
         }
     }
 
-    private void drawBubble(Canvas canvas, float bubbleX, float eased, float bulgeFactor, float detachFactor) {
+    private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
         float pulse = (float) Math.sin(Math.PI * eased);
-
-        // stretch بیشتر در حالت شناور (فریم ۵) → شکل اشک/بلوب مایع
-        float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased) + 0.45f * detachFactor;
-
+        float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased);
         float mainRadiusX = r * stretchFactor * (0.97f - 0.03f * pulse);
         float mainRadiusY = r * (0.97f - 0.03f * pulse);
-
-        // bubble شناور می‌شه (بالا می‌ره) وقتی detachFactor بالا باشه
-        float bubbleLift = dp(24f) * detachFactor;
-        float mainY = bubbleCenterY + dp(1.8f) - bubbleLift;
-
+        float mainY = bubbleCenterY + dp(1.8f);
         float crestRadius = r * (0.48f + 0.14f * pulse);
-        float crestY = bubbleCenterY - r * (0.34f + 0.07f * pulse) - bubbleLift;
+        float crestY = bubbleCenterY - r * (0.34f + 0.07f * pulse);
 
         Path main = new Path();
         main.addOval(bubbleX - mainRadiusX, mainY - mainRadiusY, bubbleX + mainRadiusX, mainY + mainRadiusY, Path.Direction.CW);
@@ -715,7 +703,6 @@ public class MorphNavBar extends View {
         } else {
             bubblePath.addPath(crest);
         }
-
         canvas.drawPath(bubblePath, bubblePaint);
 
         if (eased > 0.05f && eased < 0.95f) {
@@ -724,23 +711,18 @@ public class MorphNavBar extends View {
         }
     }
 
-    private void drawActiveIcon(Canvas canvas, float bubbleX, float eased, float detachFactor) {
+    private void drawActiveIcon(Canvas canvas, float bubbleX, float eased) {
         int iconIndex = eased < 0.5f ? fromIndex : toIndex;
         if (iconIndex < 0 || iconIndex >= items.size()) return;
-
         MorphNavTabItem.Model item = items.get(iconIndex);
         float scale = 1f + 0.085f * (float) Math.sin(Math.PI * eased);
-
-        float bubbleLift = dp(19f) * detachFactor;               // ← آیکون هم دقیقاً با بلوب بالا می‌ره
-        float activeY = activeIconY - bubbleLift;
-
         Drawable icon = item.getSelectedIconResId() != 0
                 ? loadDrawable(item.getSelectedIconResId())
                 : loadDrawable(item.getIconResId());
-
         if (icon != null) {
-            drawDrawable(canvas, icon, bubbleX, activeY, activeIconColor, 1f, scale);
+            drawDrawable(canvas, icon, bubbleX, activeIconY, activeIconColor, 1f, scale);
         }
+
     }
 
     private void drawDrawable(Canvas canvas, @NonNull Drawable drawable, float centerX, float centerY,
