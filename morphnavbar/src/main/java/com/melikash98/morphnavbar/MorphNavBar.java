@@ -236,7 +236,23 @@ public class MorphNavBar extends View {
         badgeTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
     }
 
+    public void setBadgeBackgroundColor(@ColorInt int color) {
+        this.badgeBackgroundColor = color;
+        badgePaint.setColor(color);
+        invalidate();
+    }
 
+    public void setBadgeTextColor(@ColorInt int color) {
+        this.badgeTextColor = color;
+        badgeTextPaint.setColor(color);
+        invalidate();
+    }
+
+    public void setBadgeTextSizeSp(float sizeSp) {
+        this.badgeTextSizePx = sp(sizeSp);
+        badgeTextPaint.setTextSize(badgeTextSizePx);
+        invalidate();
+    }
     private void applyLabelTypeface() {
         Typeface tf = Typeface.create(labelFontFamily, Typeface.BOLD);
         if (tf == null) {
