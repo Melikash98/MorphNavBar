@@ -72,6 +72,10 @@ public class MorphNavBar extends View {
 
     private boolean showLabelOnlyOnSelected = false;
 
+
+    private int badgeBackgroundColor = Color.RED;
+    private int badgeTextColor = Color.WHITE;
+    private float badgeTextSizePx;
     private int selectedIndex = 0;
     private int fromIndex = 0;
     private int toIndex = 0;
@@ -187,6 +191,10 @@ public class MorphNavBar extends View {
                 labelFontFamily = family.trim();
             }
 
+            badgeBackgroundColor = a.getColor(R.styleable.LiquidBottomNavigationView_lbv_badgeBackgroundColor, badgeBackgroundColor);
+            badgeTextColor = a.getColor(R.styleable.LiquidBottomNavigationView_lbv_badgeTextColor, badgeTextColor);
+            badgeTextSizePx = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_badgeTextSize, badgeTextSizePx);
+
         } finally {
             a.recycle();
         }
@@ -220,10 +228,11 @@ public class MorphNavBar extends View {
         applyLabelTypeface();
 
         badgePaint.setStyle(Paint.Style.FILL);
-        badgePaint.setColor(Color.RED);
+        badgePaint.setColor(badgeBackgroundColor);
+
         badgeTextPaint.setTextAlign(Paint.Align.CENTER);
-        badgeTextPaint.setColor(Color.WHITE);
-        badgeTextPaint.setTextSize(sp(10f));
+        badgeTextPaint.setColor(badgeTextColor);
+        badgeTextPaint.setTextSize(badgeTextSizePx);
         badgeTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
     }
 
