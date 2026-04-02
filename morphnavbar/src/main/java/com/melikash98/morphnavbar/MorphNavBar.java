@@ -106,9 +106,9 @@ public class MorphNavBar extends View {
     private float labelBaselineY = 0f;
 
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
-    private static final float DEFAULT_LABEL_TOP_GAP_DP = 3f;
-    private float horizontalContentPadding = dp(16f);
-    private static final float LABEL_BOTTOM_PADDING_DP = 16f;
+    private static final float DEFAULT_LABEL_TOP_GAP_DP = 0f;
+    private float horizontalContentPadding = dp(20f);
+    private static final float LABEL_BOTTOM_PADDING_DP = 20f;
 
 
     public MorphNavBar(@NonNull Context context) {
