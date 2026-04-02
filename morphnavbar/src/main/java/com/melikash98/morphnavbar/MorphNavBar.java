@@ -162,38 +162,38 @@ public class MorphNavBar extends View {
 
     private void readAttributes(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         if (attrs == null) return;
-        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.LiquidBottomNavigationView, defStyleAttr, 0);
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.MorphNavBarView, defStyleAttr, 0);
         try {
-            barColor = a.getColor(R.styleable.LiquidBottomNavigationView_lbv_barColor, barColor);
-            shadowColor = a.getColor(R.styleable.LiquidBottomNavigationView_lbv_shadowColor, shadowColor);
-            selectedColor = a.getColor(R.styleable.LiquidBottomNavigationView_lbv_selectedColor, selectedColor);
-            inactiveIconColor = a.getColor(R.styleable.LiquidBottomNavigationView_lbv_inactiveIconColor, inactiveIconColor);
-            activeIconColor = a.getColor(R.styleable.LiquidBottomNavigationView_lbv_activeIconColor, activeIconColor);
+            barColor = a.getColor(R.styleable.MorphNavBarView_lbv_barColor, barColor);
+            shadowColor = a.getColor(R.styleable.MorphNavBarView_lbv_shadowColor, shadowColor);
+            selectedColor = a.getColor(R.styleable.MorphNavBarView_lbv_selectedColor, selectedColor);
+            inactiveIconColor = a.getColor(R.styleable.MorphNavBarView_lbv_inactiveIconColor, inactiveIconColor);
+            activeIconColor = a.getColor(R.styleable.MorphNavBarView_lbv_activeIconColor, activeIconColor);
 
-            barRadius = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_barRadius, barRadius);
-            barHeight = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_barHeight, barHeight);
-            barSideMargin = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_barSideMargin, barSideMargin);
-            barBottomMargin = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_barBottomMargin, barBottomMargin);
-            bubbleDiameter = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_bubbleDiameter, bubbleDiameter);
-            itemIconSize = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_itemIconSize, itemIconSize);
-            shadowBlur = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_shadowBlur, shadowBlur);
-            shadowDy = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_shadowDy, shadowDy);
-            animationDuration = a.getInteger(R.styleable.LiquidBottomNavigationView_lbv_animationDuration, animationDuration);
+            barRadius = a.getDimension(R.styleable.MorphNavBarView_lbv_barRadius, barRadius);
+            barHeight = a.getDimension(R.styleable.MorphNavBarView_lbv_barHeight, barHeight);
+            barSideMargin = a.getDimension(R.styleable.MorphNavBarView_lbv_barSideMargin, barSideMargin);
+            barBottomMargin = a.getDimension(R.styleable.MorphNavBarView_lbv_barBottomMargin, barBottomMargin);
+            bubbleDiameter = a.getDimension(R.styleable.MorphNavBarView_lbv_bubbleDiameter, bubbleDiameter);
+            itemIconSize = a.getDimension(R.styleable.MorphNavBarView_lbv_itemIconSize, itemIconSize);
+            shadowBlur = a.getDimension(R.styleable.MorphNavBarView_lbv_shadowBlur, shadowBlur);
+            shadowDy = a.getDimension(R.styleable.MorphNavBarView_lbv_shadowDy, shadowDy);
+            animationDuration = a.getInteger(R.styleable.MorphNavBarView_lbv_animationDuration, animationDuration);
 
-            showLabels = a.getBoolean(R.styleable.LiquidBottomNavigationView_lbv_showLabels, showLabels);
-            labelTextSizePx = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_labelTextSize, labelTextSizePx);
+            showLabels = a.getBoolean(R.styleable.MorphNavBarView_lbv_showLabels, showLabels);
+            labelTextSizePx = a.getDimension(R.styleable.MorphNavBarView_lbv_labelTextSize, labelTextSizePx);
 
-            showLabels = a.getBoolean(R.styleable.LiquidBottomNavigationView_lbv_showLabels, showLabels);
-            showLabelOnlyOnSelected = a.getBoolean(R.styleable.LiquidBottomNavigationView_lbv_showLabelOnlyOnSelected, false);
+            showLabels = a.getBoolean(R.styleable.MorphNavBarView_lbv_showLabels, showLabels);
+            showLabelOnlyOnSelected = a.getBoolean(R.styleable.MorphNavBarView_lbv_showLabelOnlyOnSelected, false);
 
-            String family = a.getString(R.styleable.LiquidBottomNavigationView_lbv_labelFontFamily);
+            String family = a.getString(R.styleable.MorphNavBarView_lbv_labelFontFamily);
             if (family != null && !family.trim().isEmpty()) {
                 labelFontFamily = family.trim();
             }
 
-            badgeBackgroundColor = a.getColor(R.styleable.LiquidBottomNavigationView_lbv_badgeBackgroundColor, badgeBackgroundColor);
-            badgeTextColor = a.getColor(R.styleable.LiquidBottomNavigationView_lbv_badgeTextColor, badgeTextColor);
-            badgeTextSizePx = a.getDimension(R.styleable.LiquidBottomNavigationView_lbv_badgeTextSize, badgeTextSizePx);
+            badgeBackgroundColor = a.getColor(R.styleable.MorphNavBarView_lbv_badgeBackgroundColor, badgeBackgroundColor);
+            badgeTextColor = a.getColor(R.styleable.MorphNavBarView_lbv_badgeTextColor, badgeTextColor);
+            badgeTextSizePx = a.getDimension(R.styleable.MorphNavBarVieww_lbv_badgeTextSize, badgeTextSizePx);
 
         } finally {
             a.recycle();
