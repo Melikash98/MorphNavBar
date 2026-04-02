@@ -92,7 +92,6 @@ public class MorphNavBar extends View {
     private float barBottomMargin;
     private float bubbleDiameter;
     private float itemIconSize;
-    private float activeItemIconSize;
     private float shadowBlur;
     private float shadowDy;
     private int animationDuration;
@@ -150,7 +149,6 @@ public class MorphNavBar extends View {
         bubbleDiameter = dp(110f);
         itemIconSize = dp(34f);
         shadowBlur = dp(12f);
-        activeItemIconSize = dp(52f);
         shadowDy = dp(4f);
         animationDuration = DEFAULT_ANIMATION_DURATION;
 
@@ -578,9 +576,9 @@ public class MorphNavBar extends View {
 
         barRect.set(left, top, right, bottom);
 
-        bubbleCenterY = top + bubbleDiameter * 0.48f;
+        bubbleCenterY = top + bubbleDiameter * 0.5f;
         activeIconY = bubbleCenterY;
-        inactiveIconY = bubbleCenterY - dp(8f);
+        inactiveIconY = bubbleCenterY;
 
         rebuildCenters();
 
@@ -593,9 +591,8 @@ public class MorphNavBar extends View {
     private float getLabelAreaHeightPx() {
         if (!showLabels || !hasAnyLabel) return 0f;
         labelPaint.getFontMetrics(labelFontMetrics);
-        return (labelFontMetrics.bottom - labelFontMetrics.top)
-                + dp(DEFAULT_LABEL_TOP_GAP_DP)
-                + dp(LABEL_BOTTOM_PADDING_DP);
+
+        return (labelFontMetrics.bottom - labelFontMetrics.top) + dp(DEFAULT_LABEL_TOP_GAP_DP);
     }
 
     private void rebuildCenters() {
@@ -667,19 +664,17 @@ public class MorphNavBar extends View {
     }
 
     private void drawInactiveIcons(Canvas canvas, float bubbleX) {
-        float influenceRadius = bubbleDiameter * 0.92f;
+        float influenceRadius = bubbleDiameter * 0.9f;
         for (int i = 0; i < items.size(); i++) {
             MorphNavTabItem.Model item = items.get(i);
             float centerX = centerXs.get(i);
             float distance = Math.abs(centerX - bubbleX);
             float t = clamp(1f - (distance / influenceRadius), 0f, 1f);
             float eased = positionInterpolator.getInterpolation(t);
-            float inactiveAlpha = 1f - 0.85f * eased;
-
+            float inactiveAlpha = 1f - 0.88f * eased;
             Drawable icon = loadDrawable(item.getIconResId());
             if (icon != null) {
-                drawDrawableWithSize(canvas, icon, centerX, inactiveIconY,
-                        inactiveIconColor, inactiveAlpha, itemIconSize);
+                drawDrawable(canvas, icon, centerX, inactiveIconY, inactiveIconColor, inactiveAlpha);
             }
         }
     }
@@ -687,16 +682,15 @@ public class MorphNavBar extends View {
     private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
         float pulse = (float) Math.sin(Math.PI * eased);
-        float stretchFactor = 1f + 0.32f * (float) Math.sin(Math.PI * eased);
-        float mainRadiusX = r * stretchFactor * (0.96f - 0.04f * pulse);
-        float mainRadiusY = r * (0.96f - 0.04f * pulse);
-        float mainY = bubbleCenterY + dp(2f);
-        float crestRadius = r * (0.46f + 0.16f * pulse);
-        float crestY = bubbleCenterY - r * (0.36f + 0.08f * pulse);
+        float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased);
+        float mainRadiusX = r * stretchFactor * (0.97f - 0.03f * pulse);
+        float mainRadiusY = r * (0.97f - 0.03f * pulse);
+        float mainY = bubbleCenterY + dp(1.8f);
+        float crestRadius = r * (0.48f + 0.14f * pulse);
+        float crestY = bubbleCenterY - r * (0.34f + 0.07f * pulse);
 
         Path main = new Path();
-        main.addOval(bubbleX - mainRadiusX, mainY - mainRadiusY,
-                bubbleX + mainRadiusX, mainY + mainRadiusY, Path.Direction.CW);
+        main.addOval(bubbleX - mainRadiusX, mainY - mainRadiusY, bubbleX + mainRadiusX, mainY + mainRadiusY, Path.Direction.CW);
 
         Path crest = new Path();
         crest.addCircle(bubbleX, crestY, crestRadius, Path.Direction.CW);
@@ -711,42 +705,24 @@ public class MorphNavBar extends View {
         canvas.drawPath(bubblePath, bubblePaint);
 
         if (eased > 0.05f && eased < 0.95f) {
-            float highlightRadius = r * 0.22f * pulse;
-            canvas.drawCircle(bubbleX, crestY - highlightRadius * 0.25f, highlightRadius, bubblePaint);
+            float highlightRadius = r * 0.21f * pulse;
+            canvas.drawCircle(bubbleX, crestY - highlightRadius * 0.22f, highlightRadius, bubblePaint);
         }
     }
 
     private void drawActiveIcon(Canvas canvas, float bubbleX, float eased) {
         int iconIndex = eased < 0.5f ? fromIndex : toIndex;
         if (iconIndex < 0 || iconIndex >= items.size()) return;
-
         MorphNavTabItem.Model item = items.get(iconIndex);
-        float scale = 1f + 0.09f * (float) Math.sin(Math.PI * eased);
-
+        float scale = 1f + 0.085f * (float) Math.sin(Math.PI * eased);
         Drawable icon = item.getSelectedIconResId() != 0
                 ? loadDrawable(item.getSelectedIconResId())
                 : loadDrawable(item.getIconResId());
-
         if (icon != null) {
-            drawDrawableWithSize(canvas, icon, bubbleX, activeIconY,
-                    activeIconColor, 1f, activeItemIconSize * scale);
+            drawDrawable(canvas, icon, bubbleX, activeIconY, activeIconColor, 1f, scale);
         }
 
     }
-    private void drawDrawableWithSize(Canvas canvas, @NonNull Drawable drawable, float centerX, float centerY,
-                                      @ColorInt int tint, float alpha, float desiredSize) {
-        Drawable d = drawable.mutate();
-        d.setTint(tint);
-        int size = Math.round(desiredSize);
-        int half = size / 2;
-        d.setBounds(Math.round(centerX) - half, Math.round(centerY) - half,
-                Math.round(centerX) + half, Math.round(centerY) + half);
-        int oldAlpha = d.getAlpha();
-        d.setAlpha((int) (255f * clamp(alpha, 0f, 1f)));
-        d.draw(canvas);
-        d.setAlpha(oldAlpha);
-    }
-
 
     private void drawDrawable(Canvas canvas, @NonNull Drawable drawable, float centerX, float centerY,
                               @ColorInt int tint, float alpha) {
