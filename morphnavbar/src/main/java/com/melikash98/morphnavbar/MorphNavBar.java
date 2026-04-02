@@ -6,6 +6,7 @@ import android.animation.Keyframe;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
@@ -218,18 +219,10 @@ public class MorphNavBar extends View {
 
 
     private void applyLabelTypeface() {
-        Typeface tf;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            tf = Typeface.create(Typeface.createFromFile(labelFontFamily), 800, false);
-        } else {
-            tf = Typeface.create(labelFontFamily, Typeface.BOLD);
-        }
-
+        Typeface tf = Typeface.create(labelFontFamily, Typeface.BOLD);
         if (tf == null) {
             tf = Typeface.DEFAULT_BOLD;
         }
-
         labelPaint.setTypeface(tf);
     }
 
