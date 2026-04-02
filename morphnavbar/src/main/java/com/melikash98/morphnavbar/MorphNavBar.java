@@ -110,8 +110,8 @@ public class MorphNavBar extends View {
 
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
     private static final float DEFAULT_LABEL_TOP_GAP_DP = -2f;
-    private float horizontalContentPadding = dp(18f);
-    private static final float LABEL_BOTTOM_PADDING_DP = 18f;
+    private float horizontalContentPadding = dp(16f);
+    private static final float LABEL_BOTTOM_PADDING_DP = 16f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -615,10 +615,13 @@ public class MorphNavBar extends View {
         float eased = positionInterpolator.getInterpolation(progress);
         float bubbleX = lerp(startX, endX, eased);
 
-        drawShadow(canvas, bubbleX, eased);
-        drawBar(canvas, bubbleX, eased);
+        float bulgeFactor = Math.abs(2f * eased - 1f);
+        float detachFactor = 1f - bulgeFactor;
+
+        drawShadow(canvas, bubbleX, eased, bulgeFactor);
+        drawBar(canvas, bubbleX, eased, bulgeFactor);
         drawInactiveIcons(canvas, bubbleX);
-        drawBubble(canvas, bubbleX, eased);
+        drawBubble(canvas, bubbleX, eased, bulgeFactor, detachFactor);
         drawActiveIcon(canvas, bubbleX, eased);
 
         if ((showLabels || showLabelOnlyOnSelected) && hasAnyLabel) {
@@ -628,23 +631,22 @@ public class MorphNavBar extends View {
     }
 
 
-    private void drawShadow(Canvas canvas, float bubbleX, float eased) {
+    private void drawShadow(Canvas canvas, float bubbleX, float eased, float bulgeFactor) {
         shadowPaint.setShadowLayer(shadowBlur, 0f, shadowDy, shadowColor);
-        canvas.drawPath(buildBarPath(bubbleX, eased), shadowPaint);
+        canvas.drawPath(buildBarPath(bubbleX, eased, bulgeFactor), shadowPaint);
         shadowPaint.clearShadowLayer();
     }
 
-    private void drawBar(Canvas canvas, float bubbleX, float eased) {
-        canvas.drawPath(buildBarPath(bubbleX, eased), barPaint);
+    private void drawBar(Canvas canvas, float bubbleX, float eased, float bulgeFactor) {
+        canvas.drawPath(buildBarPath(bubbleX, eased, bulgeFactor), barPaint);
     }
 
-    private Path buildBarPath(float bubbleX, float eased) {
+    private Path buildBarPath(float bubbleX, float eased, float bulgeFactor){
         Path path = new Path();
         float left = barRect.left, top = barRect.top, right = barRect.right, bottom = barRect.bottom;
-
         float radius = barRadius;
         float pulse = (float) Math.sin(Math.PI * eased);
-        float bulgeDepth = dp(12f) + dp(6.5f) * pulse;
+        float bulgeDepth = (dp(12f) + dp(6.5f) * pulse) * bulgeFactor;
         float bumpWidth = bubbleDiameter * 1.38f;
         float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
         float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
@@ -680,15 +682,20 @@ public class MorphNavBar extends View {
         }
     }
 
-    private void drawBubble(Canvas canvas, float bubbleX, float eased) {
+    private void drawBubble(Canvas canvas, float bubbleX, float eased, float bulgeFactor, float detachFactor) {
         float r = bubbleDiameter / 2f;
         float pulse = (float) Math.sin(Math.PI * eased);
-        float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased);
+
+        float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased) + 0.45f * detachFactor;
+
         float mainRadiusX = r * stretchFactor * (0.97f - 0.03f * pulse);
         float mainRadiusY = r * (0.97f - 0.03f * pulse);
-        float mainY = bubbleCenterY + dp(1.8f);
+
+        float bubbleLift = dp(24f) * detachFactor;
+        float mainY = bubbleCenterY + dp(1.8f) - bubbleLift;
+
         float crestRadius = r * (0.48f + 0.14f * pulse);
-        float crestY = bubbleCenterY - r * (0.34f + 0.07f * pulse);
+        float crestY = bubbleCenterY - r * (0.34f + 0.07f * pulse) - bubbleLift;
 
         Path main = new Path();
         main.addOval(bubbleX - mainRadiusX, mainY - mainRadiusY, bubbleX + mainRadiusX, mainY + mainRadiusY, Path.Direction.CW);
@@ -703,6 +710,7 @@ public class MorphNavBar extends View {
         } else {
             bubblePath.addPath(crest);
         }
+
         canvas.drawPath(bubblePath, bubblePaint);
 
         if (eased > 0.05f && eased < 0.95f) {
