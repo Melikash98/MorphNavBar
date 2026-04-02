@@ -1,14 +1,12 @@
 package com.melikash98.morphnavbar;
 
-import android.graphics.drawable.Drawable;
-
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 
-public final class LiquidTabItem {
-    public LiquidTabItem() {
+public final class MorphNavTabItem {
+    public MorphNavTabItem() {
     }
     public static final class Model{
         @NonNull

@@ -28,10 +28,10 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.graphics.ColorUtils;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 
-import com.melikash98.morphnavbar.Iinterface.ClickListener;
-import com.melikash98.morphnavbar.Iinterface.OnTabSelectedListener;
-import com.melikash98.morphnavbar.Iinterface.ReselectListener;
-import com.melikash98.morphnavbar.Iinterface.ShowListener;
+import com.melikash98.morphnavbar.Interface.ClickListener;
+import com.melikash98.morphnavbar.Interface.OnTabSelectedListener;
+import com.melikash98.morphnavbar.Interface.ReselectListener;
+import com.melikash98.morphnavbar.Interface.ShowListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,7 +58,7 @@ public class MorphNavBar extends View {
     private final Path barPath = new Path();
     private final Path bubblePath = new Path();
 
-    private final List<LiquidTabItem.Model> items = new ArrayList<>();
+    private final List<MorphNavTabItem.Model> items = new ArrayList<>();
     private final List<Float> centerXs = new ArrayList<>();
     private final Map<Integer, String> badgeCounts = new HashMap<>();
 
@@ -262,7 +262,7 @@ public class MorphNavBar extends View {
         labelPaint.setTypeface(tf);
     }
 
-    public void setTabs(@NonNull List<LiquidTabItem.Model> tabs) {
+    public void setTabs(@NonNull List<MorphNavTabItem.Model> tabs) {
         items.clear();
         items.addAll(tabs);
         updateHasAnyLabel();
@@ -277,7 +277,7 @@ public class MorphNavBar extends View {
         }
     }
 
-    public void setTabs(@NonNull LiquidTabItem.Model... tabs) {
+    public void setTabs(@NonNull MorphNavTabItem.Model... tabs) {
         items.clear();
         Collections.addAll(items, tabs);
         updateHasAnyLabel();
@@ -292,7 +292,7 @@ public class MorphNavBar extends View {
         }
     }
 
-    public void add(@NonNull LiquidTabItem.Model tab) {
+    public void add(@NonNull MorphNavTabItem.Model tab) {
         items.add(tab);
         updateHasAnyLabel();
 
@@ -524,7 +524,7 @@ public class MorphNavBar extends View {
 
     private void updateHasAnyLabel() {
         hasAnyLabel = false;
-        for (LiquidTabItem.Model item : items) {
+        for (MorphNavTabItem.Model item : items) {
             if (item.getLabel() != null && item.getLabel().length() > 0) {
                 hasAnyLabel = true;
                 break;
@@ -537,7 +537,7 @@ public class MorphNavBar extends View {
             setContentDescription(null);
             return;
         }
-        LiquidTabItem.Model item = items.get(selectedIndex);
+        MorphNavTabItem.Model item = items.get(selectedIndex);
         CharSequence cd = item.getContentDescription();
         if (cd != null && cd.length() > 0) {
             setContentDescription(cd);
@@ -667,7 +667,7 @@ public class MorphNavBar extends View {
     private void drawInactiveIcons(Canvas canvas, float bubbleX) {
         float influenceRadius = bubbleDiameter * 0.9f;
         for (int i = 0; i < items.size(); i++) {
-            LiquidTabItem.Model item = items.get(i);
+            MorphNavTabItem.Model item = items.get(i);
             float centerX = centerXs.get(i);
             float distance = Math.abs(centerX - bubbleX);
             float t = clamp(1f - (distance / influenceRadius), 0f, 1f);
@@ -714,7 +714,7 @@ public class MorphNavBar extends View {
     private void drawActiveIcon(Canvas canvas, float bubbleX, float eased) {
         int iconIndex = eased < 0.5f ? fromIndex : toIndex;
         if (iconIndex < 0 || iconIndex >= items.size()) return;
-        LiquidTabItem.Model item = items.get(iconIndex);
+        MorphNavTabItem.Model item = items.get(iconIndex);
         float scale = 1f + 0.085f * (float) Math.sin(Math.PI * eased);
         Drawable icon = item.getSelectedIconResId() != 0
                 ? loadDrawable(item.getSelectedIconResId())
@@ -736,7 +736,7 @@ public class MorphNavBar extends View {
             int labelIndex = eased < 0.5f ? fromIndex : toIndex;
             if (labelIndex < 0 || labelIndex >= items.size()) return;
 
-            LiquidTabItem.Model item = items.get(labelIndex);
+            MorphNavTabItem.Model item = items.get(labelIndex);
             CharSequence label = item.getLabel();
             if (label == null || label.length() == 0) return;
 
@@ -757,7 +757,7 @@ public class MorphNavBar extends View {
         float maxTextWidth = segmentWidth - dp(10f);
 
         for (int i = 0; i < items.size(); i++) {
-            LiquidTabItem.Model item = items.get(i);
+            MorphNavTabItem.Model item = items.get(i);
             CharSequence label = item.getLabel();
             if (label == null || label.length() == 0) continue;
 
@@ -818,7 +818,7 @@ public class MorphNavBar extends View {
             case MotionEvent.ACTION_UP:
                 int index = hitTest(event.getX(), event.getY());
                 if (index != -1) {
-                    LiquidTabItem.Model item = items.get(index);
+                    MorphNavTabItem.Model item = items.get(index);
 
                     if (clickListener != null) clickListener.onClickItem(item);
 
