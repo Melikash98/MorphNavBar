@@ -105,7 +105,9 @@ public class MorphNavBar extends View {
     private float labelBaselineY = 0f;
 
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
-    private static final float DEFAULT_LABEL_TOP_GAP_DP = 0f;
+    private static final float DEFAULT_LABEL_TOP_GAP_DP = 3f;
+    private float horizontalContentPadding = dp(16f);
+    private static final float LABEL_BOTTOM_PADDING_DP = 16f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -138,9 +140,9 @@ public class MorphNavBar extends View {
         activeIconColor = Color.WHITE;
 
         barRadius = dp(26f);
-        barHeight = dp(92f);
+        barHeight = dp(78f);
         barSideMargin = dp(0f);
-        barBottomMargin = dp(16f);
+        barBottomMargin = dp(0f);
         bubbleDiameter = dp(92f);
         itemIconSize = dp(34f);
         shadowBlur = dp(12f);
@@ -216,7 +218,13 @@ public class MorphNavBar extends View {
 
 
     private void applyLabelTypeface() {
-        Typeface tf = Typeface.create(labelFontFamily, Typeface.BOLD);
+        Typeface tf;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            tf = Typeface.create(Typeface.createFromFile(labelFontFamily), 800, false);
+        } else {
+            tf = Typeface.create(labelFontFamily, Typeface.BOLD);
+        }
 
         if (tf == null) {
             tf = Typeface.DEFAULT_BOLD;
@@ -448,7 +456,7 @@ public class MorphNavBar extends View {
         int desiredHeight = (int) Math.ceil(
                 getPaddingTop() + getPaddingBottom()
                         + barHeight
-                        + bubbleDiameter * 0.30f
+                        + bubbleDiameter * 0.42f
                         + barBottomMargin
                         + labelArea
         );
@@ -467,7 +475,7 @@ public class MorphNavBar extends View {
         float left = getPaddingLeft() + barSideMargin;
         float right = w - getPaddingRight() - barSideMargin;
         float bottom = h - getPaddingBottom() - barBottomMargin;
-        float top = bottom - (barHeight + getLabelAreaHeightPx());
+        float top = bottom - (barHeight + labelArea);
 
         barRect.set(left, top, right, bottom);
 
@@ -479,7 +487,7 @@ public class MorphNavBar extends View {
 
         if (showLabels && hasAnyLabel) {
             labelPaint.getFontMetrics(labelFontMetrics);
-            labelBaselineY = barRect.bottom - dp(DEFAULT_LABEL_TOP_GAP_DP) - labelFontMetrics.bottom;
+            labelBaselineY = barRect.bottom - dp(LABEL_BOTTOM_PADDING_DP) - labelFontMetrics.bottom;
         }
     }
 
@@ -492,9 +500,10 @@ public class MorphNavBar extends View {
     private void rebuildCenters() {
         centerXs.clear();
         if (items.isEmpty()) return;
-        float seg = barRect.width() / items.size();
+        float effectiveWidth = barRect.width() - 2 * horizontalContentPadding;
+        float seg = effectiveWidth / items.size();
         for (int i = 0; i < items.size(); i++) {
-            centerXs.add(barRect.left + seg * (i + 0.5f));
+            centerXs.add(barRect.left + horizontalContentPadding + seg * (i + 0.5f));
         }
     }
 
@@ -531,7 +540,7 @@ public class MorphNavBar extends View {
 
     private Path buildBarPath(float bubbleX, float eased) {
         Path path = new Path();
-        float left = barRect.left, top = barRect.top, right = barRect.right, bottom = barRect.bottom;
+        float left = barRect.left, top = barRect.top, right = barRect.right;
         float radius = barRadius;
         float pulse = (float) Math.sin(Math.PI * eased);
         float bulgeDepth = dp(9f) + dp(4.5f) * pulse;
@@ -546,10 +555,6 @@ public class MorphNavBar extends View {
         path.cubicTo(bubbleX + bumpWidth * 0.19f, bulgeTop, bumpRight - bumpWidth * 0.25f, top, bumpRight, top);
         path.lineTo(right - radius, top);
         path.quadTo(right, top, right, top + radius);
-        path.lineTo(right, bottom - radius);
-        path.quadTo(right, bottom, right - radius, bottom);
-        path.lineTo(left + radius, bottom);
-        path.quadTo(left, bottom, left, bottom - radius);
         path.lineTo(left, top + radius);
         path.quadTo(left, top, left + radius, top);
         path.close();
