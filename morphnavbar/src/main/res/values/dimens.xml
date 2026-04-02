@@ -10,4 +10,5 @@
     <dimen name="lbv_indicator_height">2dp</dimen>
     <dimen name="lbv_shadow_blur">16dp</dimen>
     <dimen name="lbv_shadow_dy">6dp</dimen>
+    <integer name="lbv_animationDuration">450</integer>
 </resources>
