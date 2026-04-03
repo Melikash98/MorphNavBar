@@ -12,7 +12,6 @@
         <attr name="lbv_barHeight" format="dimension" />
         <attr name="lbv_barSideMargin" format="dimension" />
         <attr name="lbv_barBottomMargin" format="dimension" />
-        <attr name="lbv_bubbleDiameter" format="dimension" />
         <attr name="lbv_itemIconSize" format="dimension" />
         <attr name="lbv_shadowBlur" format="dimension" />
         <attr name="lbv_shadowDy" format="dimension" />

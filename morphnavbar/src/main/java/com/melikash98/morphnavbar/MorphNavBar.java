@@ -176,7 +176,6 @@ public class MorphNavBar extends View {
             barHeight = a.getDimension(R.styleable.MorphNavBarView_lbv_barHeight, barHeight);
             barSideMargin = a.getDimension(R.styleable.MorphNavBarView_lbv_barSideMargin, barSideMargin);
             barBottomMargin = a.getDimension(R.styleable.MorphNavBarView_lbv_barBottomMargin, barBottomMargin);
-            bubbleDiameter = a.getDimension(R.styleable.MorphNavBarView_lbv_bubbleDiameter, bubbleDiameter);
             itemIconSize = a.getDimension(R.styleable.MorphNavBarView_lbv_itemIconSize, itemIconSize);
             shadowBlur = a.getDimension(R.styleable.MorphNavBarView_lbv_shadowBlur, shadowBlur);
             shadowDy = a.getDimension(R.styleable.MorphNavBarView_lbv_shadowDy, shadowDy);
@@ -675,9 +674,9 @@ public class MorphNavBar extends View {
     private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
 
-        float stretchFactor = 1f + 0.9f * (float) Math.sin(Math.PI * eased);
-        float radiusX = r * stretchFactor;
-        float radiusY = r * 0.88f;
+        float stretch = (float) Math.sin(Math.PI * eased);
+        float radiusX = r * (1f + 0.78f * stretch);
+        float radiusY = r * (0.94f - 0.06f * stretch);
 
         float centerY = bubbleCenterY + dp(1f);
 
