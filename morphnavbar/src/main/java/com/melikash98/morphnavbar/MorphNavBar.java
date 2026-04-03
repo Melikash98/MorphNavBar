@@ -674,9 +674,10 @@ public class MorphNavBar extends View {
     private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
 
+        // کشیدگی اصلی (liquid blob)
         float stretch = (float) Math.sin(Math.PI * eased);
-        float radiusX = r * (1f + 0.78f * stretch);
-        float radiusY = r * (0.94f - 0.06f * stretch);
+        float radiusX = r * (1f + 0.82f * stretch);   // کشیدگی قوی و طبیعی
+        float radiusY = r * (0.93f - 0.07f * stretch);
 
         float centerY = bubbleCenterY + dp(1f);
 
@@ -688,8 +689,20 @@ public class MorphNavBar extends View {
                 centerY + radiusY,
                 Path.Direction.CW
         );
-
         canvas.drawPath(bubblePath, bubblePaint);
+
+        if (eased > 0.45f) {
+            float trailAlpha = 1f - (eased - 0.45f) * 2f;
+            if (trailAlpha > 0) {
+                float trailRadius = r * 0.38f;
+                float trailOffset = (toIndex > fromIndex ? -r * 0.6f : r * 0.6f) * (eased - 0.45f) * 1.8f;
+                float trailX = bubbleX + trailOffset;
+
+                bubblePaint.setAlpha((int) (255 * trailAlpha));
+                canvas.drawCircle(trailX, centerY, trailRadius, bubblePaint);
+                bubblePaint.setAlpha(255);
+            }
+        }
     }
 
     private void drawActiveIcon(Canvas canvas, float bubbleX, float eased) {
