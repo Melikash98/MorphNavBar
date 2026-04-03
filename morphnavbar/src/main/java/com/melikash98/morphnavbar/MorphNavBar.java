@@ -41,7 +41,7 @@ import java.util.Map;
 
 
 public class MorphNavBar extends View {
-    private static final int DEFAULT_ANIMATION_DURATION = 320;
+    private static final int DEFAULT_ANIMATION_DURATION = 650;
 
     private final Paint barPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -110,7 +110,7 @@ public class MorphNavBar extends View {
 
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
     private static final float DEFAULT_LABEL_TOP_GAP_DP = 4.5f;
-    private float horizontalContentPadding = dp(14f);
+    private float horizontalContentPadding;
     private static final float LABEL_BOTTOM_PADDING_DP = 26f;
 
 
@@ -144,14 +144,15 @@ public class MorphNavBar extends View {
         activeIconColor = Color.WHITE;
         unselectedColor = Color.parseColor("#00CFC0");
 
-        barRadius = dp(26f);
-        barHeight = dp(160f);
+        barRadius = dp(36f);
+        barHeight = dp(72f);
         barSideMargin = dp(0f);
         barBottomMargin = dp(0f);
-        bubbleDiameter = dp(110f);
-        itemIconSize = dp(34f);
+        bubbleDiameter = dp(48f);
+        itemIconSize = dp(28f);
         shadowBlur = dp(12f);
         shadowDy = dp(4f);
+        horizontalContentPadding = dp(14f);
         animationDuration = DEFAULT_ANIMATION_DURATION;
 
         showLabels = true;
@@ -184,7 +185,6 @@ public class MorphNavBar extends View {
             showLabels = a.getBoolean(R.styleable.MorphNavBarView_lbv_showLabels, showLabels);
             labelTextSizePx = a.getDimension(R.styleable.MorphNavBarView_lbv_labelTextSize, labelTextSizePx);
 
-            showLabels = a.getBoolean(R.styleable.MorphNavBarView_lbv_showLabels, showLabels);
             showLabelOnlyOnSelected = a.getBoolean(R.styleable.MorphNavBarView_lbv_showLabelOnlyOnSelected, false);
 
             String family = a.getString(R.styleable.MorphNavBarView_lbv_labelFontFamily);
@@ -486,7 +486,7 @@ public class MorphNavBar extends View {
 
     public void setLabelFontFamily(@Nullable String fontFamily) {
         if (fontFamily == null || fontFamily.trim().isEmpty()) {
-            this.labelFontFamily = "Roboto Mono";
+            this.labelFontFamily = "sans-serif";
         } else {
             this.labelFontFamily = fontFamily.trim();
         }
@@ -643,19 +643,9 @@ public class MorphNavBar extends View {
     private Path buildBarPath(float bubbleX, float eased) {
         Path path = new Path();
         float left = barRect.left, top = barRect.top, right = barRect.right, bottom = barRect.bottom;
-
         float radius = barRadius;
-        float pulse = (float) Math.sin(Math.PI * eased);
-        float bulgeDepth = dp(14f) + dp(20f) * pulse;
-        float bumpWidth = bubbleDiameter * 1.38f;
-        float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
-        float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
-        float bulgeTop = top - bulgeDepth;
 
         path.moveTo(left + radius, top);
-        path.lineTo(bumpLeft, top);
-        path.cubicTo(bumpLeft + bumpWidth * 0.25f, top, bubbleX - bumpWidth * 0.19f, bulgeTop, bubbleX, bulgeTop);
-        path.cubicTo(bubbleX + bumpWidth * 0.19f, bulgeTop, bumpRight - bumpWidth * 0.25f, top, bumpRight, top);
         path.lineTo(right - radius, top);
         path.quadTo(right, top, right, top + radius);
         path.lineTo(right, bottom);
@@ -684,33 +674,23 @@ public class MorphNavBar extends View {
 
     private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
-        float pulse = (float) Math.sin(Math.PI * eased);
-        float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased);
-        float mainRadiusX = r * stretchFactor * (0.97f - 0.03f * pulse);
-        float mainRadiusY = r * (0.97f - 0.03f * pulse);
-        float mainY = bubbleCenterY + dp(1.8f);
-        float crestRadius = r * (0.48f + 0.14f * pulse);
-        float crestY = bubbleCenterY - r * (0.34f + 0.07f * pulse);
 
-        Path main = new Path();
-        main.addOval(bubbleX - mainRadiusX, mainY - mainRadiusY, bubbleX + mainRadiusX, mainY + mainRadiusY, Path.Direction.CW);
+        float stretchFactor = 1f + 0.9f * (float) Math.sin(Math.PI * eased);
+        float radiusX = r * stretchFactor;
+        float radiusY = r * 0.88f;
 
-        Path crest = new Path();
-        crest.addCircle(bubbleX, crestY, crestRadius, Path.Direction.CW);
+        float centerY = bubbleCenterY + dp(1f);
 
         bubblePath.reset();
-        bubblePath.set(main);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            bubblePath.op(crest, Path.Op.UNION);
-        } else {
-            bubblePath.addPath(crest);
-        }
-        canvas.drawPath(bubblePath, bubblePaint);
+        bubblePath.addOval(
+                bubbleX - radiusX,
+                centerY - radiusY,
+                bubbleX + radiusX,
+                centerY + radiusY,
+                Path.Direction.CW
+        );
 
-        if (eased > 0.05f && eased < 0.95f) {
-            float highlightRadius = r * 0.21f * pulse;
-            canvas.drawCircle(bubbleX, crestY - highlightRadius * 0.22f, highlightRadius, bubblePaint);
-        }
+        canvas.drawPath(bubblePath, bubblePaint);
     }
 
     private void drawActiveIcon(Canvas canvas, float bubbleX, float eased) {

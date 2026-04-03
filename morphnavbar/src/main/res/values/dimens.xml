@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="lbv_bar_height">160dp</dimen>
+    <dimen name="lbv_bar_height">72dp</dimen>
     <dimen name="lbv_bar_radius">22dp</dimen>
     <dimen name="lbv_bar_side_margin">0dp</dimen>
     <dimen name="lbv_bar_bottom_margin">0dp</dimen>
-    <dimen name="lbv_bubble_diameter">110dp</dimen>
-    <dimen name="lbv_item_icon_size">34dp</dimen>
-    <dimen name="lbv_indicator_width">120dp</dimen>
-    <dimen name="lbv_indicator_height">2dp</dimen>
+    <dimen name="lbv_bubble_diameter">48dp</dimen>
+    <dimen name="lbv_item_icon_size">28dp</dimen>
     <dimen name="lbv_shadow_blur">16dp</dimen>
     <dimen name="lbv_shadow_dy">6dp</dimen>
 </resources>
