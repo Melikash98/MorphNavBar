@@ -41,7 +41,7 @@ import java.util.Map;
 
 
 public class MorphNavBar extends View {
-    private static final int DEFAULT_ANIMATION_DURATION = 800;
+    private static final int DEFAULT_ANIMATION_DURATION = 700;
 
     private final Paint barPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -674,22 +674,38 @@ public class MorphNavBar extends View {
     private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
 
-        float stretch = (float) Math.sin(Math.PI * eased);
-        float radiusX = r * (1f + 1.2f * stretch);
-        float radiusY = r * 0.82f;
+        float tabDistance = Math.abs(toIndex - fromIndex);
+        float distanceFactor = Math.min(tabDistance * 0.45f, 1.0f);
 
-        float centerY = bubbleCenterY + dp(1f);
+        float stretch = (float) Math.sin(Math.PI * eased);
+        float radiusX = r * (1f + (0.95f + distanceFactor * 0.45f) * stretch);
+        float radiusY = r * (0.92f - (0.18f + distanceFactor * 0.12f) * stretch);
+
+        float centerY = bubbleCenterY + dp(1.2f);
+
+        float offsetX = (toIndex > fromIndex ? 1f : -1f) * r * 0.18f * stretch;
 
         bubblePath.reset();
         bubblePath.addOval(
-                bubbleX - radiusX,
+                bubbleX - radiusX + offsetX,
                 centerY - radiusY,
-                bubbleX + radiusX,
+                bubbleX + radiusX + offsetX,
                 centerY + radiusY,
                 Path.Direction.CW
         );
-
         canvas.drawPath(bubblePath, bubblePaint);
+
+        if (eased > 0.38f && eased < 0.82f) {
+            float trailAlpha = (float) Math.sin(Math.PI * (eased - 0.38f) / 0.44f);
+            if (trailAlpha > 0) {
+                float trailRadius = r * (0.32f + distanceFactor * 0.15f);
+                float trailOffset = (toIndex > fromIndex ? -r * 0.75f : r * 0.75f) * (eased - 0.5f) * 2.2f;
+
+                bubblePaint.setAlpha((int) (255 * trailAlpha * 0.75f));
+                canvas.drawCircle(bubbleX + trailOffset, centerY, trailRadius, bubblePaint);
+                bubblePaint.setAlpha(255);
+            }
+        }
     }
 
     private void drawActiveIcon(Canvas canvas, float bubbleX, float eased) {
