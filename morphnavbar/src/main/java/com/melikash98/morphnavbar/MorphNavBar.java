@@ -115,8 +115,8 @@ public class MorphNavBar extends View {
     private static final float DEFAULT_LABEL_TOP_GAP_DP = 4.5f;
     private float horizontalContentPadding = dp(14f);
     private static final float LABEL_BOTTOM_PADDING_DP = 26f;
-    private static final long SHAKE_DURATION_MS = 320L;
-    private static final float SHAKE_AMPLITUDE_DP = 5.5f;
+    private static final long SHAKE_DURATION_MS = 420L;
+    private static final float SHAKE_AMPLITUDE_DP = 3.2f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -403,18 +403,17 @@ public class MorphNavBar extends View {
             animator.cancel();
             animator = null;
         }
-
+        final int oldIndex = selectedIndex;
         if (!animate || centerXs.isEmpty()) {
             selectedIndex = index;
             fromIndex = index;
             toIndex = index;
             progress = 1f;
 
-            int previousIndex = selectedIndex;
-            int beforeDestinationIndex = index - 1;
+            if (oldIndex != index) {
+                startShake(oldIndex);
+            }
 
-            startShake(previousIndex);
-            startShake(beforeDestinationIndex);
 
             updateContentDescription();
 
@@ -431,7 +430,7 @@ public class MorphNavBar extends View {
         progress = 0f;
 
         animator = ValueAnimator.ofFloat(0f, 1f);
-        animator.setDuration(animationDuration);
+        animator.setDuration(SHAKE_DURATION_MS);
         animator.setInterpolator(positionInterpolator);
 
         final boolean[] cancelled = new boolean[1];
@@ -456,6 +455,9 @@ public class MorphNavBar extends View {
                 progress = 1f;
                 updateContentDescription();
 
+                if (oldIndex != index) {
+                    startShake(oldIndex);
+                }
                 if (listener != null && !items.isEmpty()) {
                     listener.onTabSelected(selectedIndex, items.get(selectedIndex));
                 }
@@ -843,6 +845,7 @@ public class MorphNavBar extends View {
                         startShake(index);
                     } else {
                         setSelectedIndex(index, true);
+                        startShake(index);
                     }
                     performClick();
                 }
@@ -949,14 +952,15 @@ public class MorphNavBar extends View {
         }
 
         ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
-        animator.setDuration(SHAKE_DURATION_MS);
-        animator.setInterpolator(new LinearInterpolator());
+        animator.setDuration(420L);
+        animator.setInterpolator(new FastOutSlowInInterpolator());
 
         animator.addUpdateListener(a -> {
             float t = (float) a.getAnimatedValue();
-
-            float amplitude = dp(SHAKE_AMPLITUDE_DP) * (1f - t);
-            float offset = (float) Math.sin(t * Math.PI * 8f) * amplitude;
+            float damping = (float) Math.pow(1f - t, 2.4f);
+            float oscillation = (float) Math.sin(t * Math.PI * 5.2f);
+            float amplitude = dp(SHAKE_AMPLITUDE_DP);
+            float offset = oscillation * damping * amplitude;
 
             shakeOffsets.put(index, offset);
             invalidate();
