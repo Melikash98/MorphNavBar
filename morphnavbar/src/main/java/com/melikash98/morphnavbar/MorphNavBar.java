@@ -42,7 +42,7 @@ import java.util.Map;
 
 
 public class MorphNavBar extends View {
-    private static final int DEFAULT_ANIMATION_DURATION = 320;
+    private static final int DEFAULT_ANIMATION_DURATION = 620;
 
     private final Paint barPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -456,6 +456,11 @@ public class MorphNavBar extends View {
                 selectedIndex = toIndex;
                 fromIndex = selectedIndex;
                 progress = 1f;
+
+                if (oldIndex != index) {
+                    startShake(oldIndex);
+                }
+
                 updateContentDescription();
 
                 if (listener != null && !items.isEmpty()) {
