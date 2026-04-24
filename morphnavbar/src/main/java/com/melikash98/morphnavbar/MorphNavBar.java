@@ -413,7 +413,7 @@ public class MorphNavBar extends View {
             int previousIndex = selectedIndex;
             int beforeDestinationIndex = index - 1;
 
-            //startShake(previousIndex);
+            startShake(previousIndex);
             startShake(beforeDestinationIndex);
 
             updateContentDescription();
@@ -733,8 +733,10 @@ public class MorphNavBar extends View {
         Drawable icon = item.getSelectedIconResId() != 0
                 ? loadDrawable(item.getSelectedIconResId())
                 : loadDrawable(item.getIconResId());
+
         if (icon != null) {
-            drawDrawable(canvas, icon, bubbleX, activeIconY, activeIconColor, 1f, scale);
+            float shakeX = getShakeOffset(iconIndex);
+            drawDrawable(canvas, icon, bubbleX + shakeX, activeIconY, activeIconColor, 1f, scale);
         }
 
     }
@@ -979,10 +981,6 @@ public class MorphNavBar extends View {
         animator.start();
     }
 
-    private void shakeNeighbors(int index) {
-        startShake(index - 1);
-        startShake(index + 1);
-    }
 
     private float getShakeOffset(int index) {
         Float value = shakeOffsets.get(index);
