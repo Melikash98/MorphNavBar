@@ -409,7 +409,13 @@ public class MorphNavBar extends View {
             fromIndex = index;
             toIndex = index;
             progress = 1f;
-            startShake(fromIndex);
+
+            int previousIndex = selectedIndex;
+            int beforeDestinationIndex = index - 1;
+
+            //startShake(previousIndex);
+            startShake(beforeDestinationIndex);
+
             updateContentDescription();
 
             if (listener != null) listener.onTabSelected(selectedIndex, items.get(selectedIndex));
