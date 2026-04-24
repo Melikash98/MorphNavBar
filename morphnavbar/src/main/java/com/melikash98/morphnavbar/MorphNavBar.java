@@ -19,6 +19,7 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
@@ -60,6 +61,8 @@ public class MorphNavBar extends View {
     private final List<MorphNavTabItem.Model> items = new ArrayList<>();
     private final List<Float> centerXs = new ArrayList<>();
     private final Map<Integer, String> badgeCounts = new HashMap<>();
+    private final Map<Integer, Float> shakeOffsets = new HashMap<>();
+    private final Map<Integer, ValueAnimator> shakeAnimators = new HashMap<>();
 
     private final FastOutSlowInInterpolator positionInterpolator = new FastOutSlowInInterpolator();
 
@@ -112,6 +115,8 @@ public class MorphNavBar extends View {
     private static final float DEFAULT_LABEL_TOP_GAP_DP = 4.5f;
     private float horizontalContentPadding = dp(14f);
     private static final float LABEL_BOTTOM_PADDING_DP = 26f;
+    private static final long SHAKE_DURATION_MS = 320L;
+    private static final float SHAKE_AMPLITUDE_DP = 4f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -646,7 +651,7 @@ public class MorphNavBar extends View {
         float radius = barRadius;
         float pulse = (float) Math.sin(Math.PI * eased);
         float bulgeDepth = dp(18f) + dp(28f) * pulse;
-        float bumpWidth = bubbleDiameter * 1.38f;
+        float bumpWidth = bubbleDiameter * 1.55f;
         float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
         float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
         float bulgeTop = top - bulgeDepth;
@@ -675,8 +680,9 @@ public class MorphNavBar extends View {
             float eased = positionInterpolator.getInterpolation(t);
             float inactiveAlpha = 1f - 0.88f * eased;
             Drawable icon = loadDrawable(item.getIconResId());
+            float shakeX = getShakeOffset(i);
             if (icon != null) {
-                drawDrawable(canvas, icon, centerX, inactiveIconY, inactiveIconColor, inactiveAlpha);
+                drawDrawable(canvas, icon, centerX + shakeX, inactiveIconY, inactiveIconColor, inactiveAlpha);
             }
         }
     }
@@ -825,8 +831,12 @@ public class MorphNavBar extends View {
 
                     if (index == selectedIndex) {
                         if (reselectListener != null) reselectListener.onReselectItem(item);
+                        startShake(index);
+                        shakeNeighbors(index);
                     } else {
                         setSelectedIndex(index, true);
+                        setSelectedIndex(index, true);
+                        shakeNeighbors(index);
                     }
                     performClick();
                 }
@@ -890,6 +900,7 @@ public class MorphNavBar extends View {
     @Override
     protected void onDetachedFromWindow() {
         if (animator != null) animator.cancel();
+        cancelShakeAnimations();
         super.onDetachedFromWindow();
     }
 
@@ -922,5 +933,63 @@ public class MorphNavBar extends View {
         if (!items.isEmpty() && showListener != null) {
             showListener.onShowItem(items.get(selectedIndex));
         }
+    }
+    private void startShake(int index) {
+        if (index < 0 || index >= items.size()) return;
+
+        ValueAnimator running = shakeAnimators.remove(index);
+        if (running != null) {
+            running.cancel();
+        }
+
+        ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+        animator.setDuration(SHAKE_DURATION_MS);
+        animator.setInterpolator(new LinearInterpolator());
+
+        animator.addUpdateListener(a -> {
+            float t = (float) a.getAnimatedValue();
+
+            float amplitude = dp(SHAKE_AMPLITUDE_DP) * (1f - t);
+            float offset = (float) Math.sin(t * Math.PI * 8f) * amplitude;
+
+            shakeOffsets.put(index, offset);
+            invalidate();
+        });
+
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                shakeOffsets.remove(index);
+                shakeAnimators.remove(index);
+                invalidate();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                shakeOffsets.remove(index);
+                shakeAnimators.remove(index);
+            }
+        });
+
+        shakeAnimators.put(index, animator);
+        animator.start();
+    }
+
+    private void shakeNeighbors(int index) {
+        startShake(index - 1);
+        startShake(index + 1);
+    }
+
+    private float getShakeOffset(int index) {
+        Float value = shakeOffsets.get(index);
+        return value != null ? value : 0f;
+    }
+
+    private void cancelShakeAnimations() {
+        for (ValueAnimator animator : shakeAnimators.values()) {
+            animator.cancel();
+        }
+        shakeAnimators.clear();
+        shakeOffsets.clear();
     }
 }
