@@ -115,8 +115,8 @@ public class MorphNavBar extends View {
     private static final float DEFAULT_LABEL_TOP_GAP_DP = 4.5f;
     private float horizontalContentPadding = dp(14f);
     private static final float LABEL_BOTTOM_PADDING_DP = 26f;
-    private static final long SHAKE_DURATION_MS = 320L;
-    private static final float SHAKE_AMPLITUDE_DP = 4f;
+    private static final long SHAKE_DURATION_MS = 180L;
+    private static final float SHAKE_AMPLITUDE_DP = 1.8f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -150,7 +150,7 @@ public class MorphNavBar extends View {
         unselectedColor = Color.parseColor("#00CFC0");
 
         barRadius = dp(26f);
-        barHeight = dp(160f);
+        barHeight = dp(100f);
         barSideMargin = dp(0f);
         barBottomMargin = dp(0f);
         bubbleDiameter = dp(60f);
@@ -409,6 +409,7 @@ public class MorphNavBar extends View {
             fromIndex = index;
             toIndex = index;
             progress = 1f;
+            startShake(fromIndex);
             updateContentDescription();
 
             if (listener != null) listener.onTabSelected(selectedIndex, items.get(selectedIndex));
@@ -832,11 +833,8 @@ public class MorphNavBar extends View {
                     if (index == selectedIndex) {
                         if (reselectListener != null) reselectListener.onReselectItem(item);
                         startShake(index);
-                        shakeNeighbors(index);
                     } else {
                         setSelectedIndex(index, true);
-                        setSelectedIndex(index, true);
-                        shakeNeighbors(index);
                     }
                     performClick();
                 }
