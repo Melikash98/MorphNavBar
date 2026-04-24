@@ -77,7 +77,8 @@ public class MorphNavBar extends View {
 
     private int badgeBackgroundColor = Color.RED;
     private int badgeTextColor = Color.WHITE;
-    private float badgeTextSizePx;
+    private float badgeTextSizePx = sp(11.5f);
+    ;
     private int selectedIndex = 0;
     private int fromIndex = 0;
     private int toIndex = 0;
@@ -411,7 +412,7 @@ public class MorphNavBar extends View {
             progress = 1f;
 
             if (oldIndex != index) {
-                startShake(oldIndex);
+                startShake(index);
             }
 
 
@@ -429,9 +430,8 @@ public class MorphNavBar extends View {
         toIndex = index;
         progress = 0f;
 
-        if (oldIndex != index) {
-            startShake(oldIndex);
-        }
+        startShake(index);
+
         animator = ValueAnimator.ofFloat(0f, 1f);
         animator.setDuration(SHAKE_DURATION_MS);
         animator.setInterpolator(positionInterpolator);
@@ -845,7 +845,6 @@ public class MorphNavBar extends View {
                         startShake(index);
                     } else {
                         setSelectedIndex(index, true);
-                        startShake(index);
                     }
                     performClick();
                 }
@@ -953,7 +952,7 @@ public class MorphNavBar extends View {
         }
 
         ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
-        animator.setDuration(420L);
+        animator.setDuration(SHAKE_DURATION_MS);
         animator.setInterpolator(new FastOutSlowInInterpolator());
 
         animator.addUpdateListener(a -> {
