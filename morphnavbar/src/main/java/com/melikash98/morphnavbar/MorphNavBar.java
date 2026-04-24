@@ -429,6 +429,9 @@ public class MorphNavBar extends View {
         toIndex = index;
         progress = 0f;
 
+        if (oldIndex != index) {
+            startShake(oldIndex);
+        }
         animator = ValueAnimator.ofFloat(0f, 1f);
         animator.setDuration(SHAKE_DURATION_MS);
         animator.setInterpolator(positionInterpolator);
@@ -455,9 +458,6 @@ public class MorphNavBar extends View {
                 progress = 1f;
                 updateContentDescription();
 
-                if (oldIndex != index) {
-                    startShake(oldIndex);
-                }
                 if (listener != null && !items.isEmpty()) {
                     listener.onTabSelected(selectedIndex, items.get(selectedIndex));
                 }
@@ -943,6 +943,7 @@ public class MorphNavBar extends View {
             showListener.onShowItem(items.get(selectedIndex));
         }
     }
+
     private void startShake(int index) {
         if (index < 0 || index >= items.size()) return;
 
