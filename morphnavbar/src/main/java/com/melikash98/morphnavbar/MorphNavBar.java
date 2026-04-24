@@ -115,8 +115,8 @@ public class MorphNavBar extends View {
     private static final float DEFAULT_LABEL_TOP_GAP_DP = 4.5f;
     private float horizontalContentPadding = dp(14f);
     private static final float LABEL_BOTTOM_PADDING_DP = 26f;
-    private static final long SHAKE_DURATION_MS = 180L;
-    private static final float SHAKE_AMPLITUDE_DP = 1.8f;
+    private static final long SHAKE_DURATION_MS = 320L;
+    private static final float SHAKE_AMPLITUDE_DP = 5.5f;
 
 
     public MorphNavBar(@NonNull Context context) {
