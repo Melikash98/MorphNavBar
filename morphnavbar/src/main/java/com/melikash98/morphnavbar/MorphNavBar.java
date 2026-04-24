@@ -41,7 +41,7 @@ import java.util.Map;
 
 
 public class MorphNavBar extends View {
-    private static final int DEFAULT_ANIMATION_DURATION = 700;
+    private static final int DEFAULT_ANIMATION_DURATION = 320;
 
     private final Paint barPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -110,7 +110,7 @@ public class MorphNavBar extends View {
 
     private static final float DEFAULT_LABEL_SIZE_SP = 14f;
     private static final float DEFAULT_LABEL_TOP_GAP_DP = 4.5f;
-    private float horizontalContentPadding;
+    private float horizontalContentPadding = dp(14f);
     private static final float LABEL_BOTTOM_PADDING_DP = 26f;
 
 
@@ -144,15 +144,14 @@ public class MorphNavBar extends View {
         activeIconColor = Color.WHITE;
         unselectedColor = Color.parseColor("#00CFC0");
 
-        barRadius = dp(36f);
-        barHeight = dp(72f);
+        barRadius = dp(26f);
+        barHeight = dp(160f);
         barSideMargin = dp(0f);
         barBottomMargin = dp(0f);
-        bubbleDiameter = dp(48f);
-        itemIconSize = dp(28f);
+        bubbleDiameter = dp(110f);
+        itemIconSize = dp(34f);
         shadowBlur = dp(12f);
         shadowDy = dp(4f);
-        horizontalContentPadding = dp(14f);
         animationDuration = DEFAULT_ANIMATION_DURATION;
 
         showLabels = true;
@@ -176,6 +175,7 @@ public class MorphNavBar extends View {
             barHeight = a.getDimension(R.styleable.MorphNavBarView_lbv_barHeight, barHeight);
             barSideMargin = a.getDimension(R.styleable.MorphNavBarView_lbv_barSideMargin, barSideMargin);
             barBottomMargin = a.getDimension(R.styleable.MorphNavBarView_lbv_barBottomMargin, barBottomMargin);
+
             itemIconSize = a.getDimension(R.styleable.MorphNavBarView_lbv_itemIconSize, itemIconSize);
             shadowBlur = a.getDimension(R.styleable.MorphNavBarView_lbv_shadowBlur, shadowBlur);
             shadowDy = a.getDimension(R.styleable.MorphNavBarView_lbv_shadowDy, shadowDy);
@@ -485,7 +485,7 @@ public class MorphNavBar extends View {
 
     public void setLabelFontFamily(@Nullable String fontFamily) {
         if (fontFamily == null || fontFamily.trim().isEmpty()) {
-            this.labelFontFamily = "sans-serif";
+            this.labelFontFamily = "Roboto Mono";
         } else {
             this.labelFontFamily = fontFamily.trim();
         }
@@ -642,9 +642,19 @@ public class MorphNavBar extends View {
     private Path buildBarPath(float bubbleX, float eased) {
         Path path = new Path();
         float left = barRect.left, top = barRect.top, right = barRect.right, bottom = barRect.bottom;
+
         float radius = barRadius;
+        float pulse = (float) Math.sin(Math.PI * eased);
+        float bulgeDepth = dp(18f) + dp(28f) * pulse;
+        float bumpWidth = bubbleDiameter * 1.38f;
+        float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
+        float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
+        float bulgeTop = top - bulgeDepth;
 
         path.moveTo(left + radius, top);
+        path.lineTo(bumpLeft, top);
+        path.cubicTo(bumpLeft + bumpWidth * 0.25f, top, bubbleX - bumpWidth * 0.19f, bulgeTop, bubbleX, bulgeTop);
+        path.cubicTo(bubbleX + bumpWidth * 0.19f, bulgeTop, bumpRight - bumpWidth * 0.25f, top, bumpRight, top);
         path.lineTo(right - radius, top);
         path.quadTo(right, top, right, top + radius);
         path.lineTo(right, bottom);
@@ -673,38 +683,32 @@ public class MorphNavBar extends View {
 
     private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
+        float pulse = (float) Math.sin(Math.PI * eased);
+        float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased);
+        float mainRadiusX = r * stretchFactor * (0.97f - 0.03f * pulse);
+        float mainRadiusY = r * (0.97f - 0.03f * pulse);
+        float mainY = bubbleCenterY + dp(1.8f);
+        float crestRadius = r * (0.48f + 0.14f * pulse);
+        float crestY = bubbleCenterY - r * (0.34f + 0.07f * pulse);
 
-        float tabDistance = Math.abs(toIndex - fromIndex);
-        float distanceFactor = Math.min(tabDistance * 0.45f, 1.0f);
+        Path main = new Path();
+        main.addOval(bubbleX - mainRadiusX, mainY - mainRadiusY, bubbleX + mainRadiusX, mainY + mainRadiusY, Path.Direction.CW);
 
-        float stretch = (float) Math.sin(Math.PI * eased);
-        float radiusX = r * (1f + (0.95f + distanceFactor * 0.45f) * stretch);
-        float radiusY = r * (0.92f - (0.18f + distanceFactor * 0.12f) * stretch);
-
-        float centerY = bubbleCenterY + dp(1.2f);
-
-        float offsetX = (toIndex > fromIndex ? 1f : -1f) * r * 0.18f * stretch;
+        Path crest = new Path();
+        crest.addCircle(bubbleX, crestY, crestRadius, Path.Direction.CW);
 
         bubblePath.reset();
-        bubblePath.addOval(
-                bubbleX - radiusX + offsetX,
-                centerY - radiusY,
-                bubbleX + radiusX + offsetX,
-                centerY + radiusY,
-                Path.Direction.CW
-        );
+        bubblePath.set(main);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            bubblePath.op(crest, Path.Op.UNION);
+        } else {
+            bubblePath.addPath(crest);
+        }
         canvas.drawPath(bubblePath, bubblePaint);
 
-        if (eased > 0.38f && eased < 0.82f) {
-            float trailAlpha = (float) Math.sin(Math.PI * (eased - 0.38f) / 0.44f);
-            if (trailAlpha > 0) {
-                float trailRadius = r * (0.32f + distanceFactor * 0.15f);
-                float trailOffset = (toIndex > fromIndex ? -r * 0.75f : r * 0.75f) * (eased - 0.5f) * 2.2f;
-
-                bubblePaint.setAlpha((int) (255 * trailAlpha * 0.75f));
-                canvas.drawCircle(bubbleX + trailOffset, centerY, trailRadius, bubblePaint);
-                bubblePaint.setAlpha(255);
-            }
+        if (eased > 0.05f && eased < 0.95f) {
+            float highlightRadius = r * 0.21f * pulse;
+            canvas.drawCircle(bubbleX, crestY - highlightRadius * 0.22f, highlightRadius, bubblePaint);
         }
     }
 
