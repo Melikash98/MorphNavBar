@@ -148,7 +148,7 @@ public class MorphNavBar extends View {
         barHeight = dp(160f);
         barSideMargin = dp(0f);
         barBottomMargin = dp(0f);
-        bubbleDiameter = dp(110f);
+        bubbleDiameter = dp(60f);
         itemIconSize = dp(34f);
         shadowBlur = dp(12f);
         shadowDy = dp(4f);
