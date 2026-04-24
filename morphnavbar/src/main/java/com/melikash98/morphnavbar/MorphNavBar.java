@@ -650,8 +650,8 @@ public class MorphNavBar extends View {
 
         float radius = barRadius;
         float pulse = (float) Math.sin(Math.PI * eased);
-        float bulgeDepth = dp(18f) + dp(28f) * pulse;
-        float bumpWidth = bubbleDiameter * 1.55f;
+        float bulgeDepth = dp(11f) + dp(16f) * pulse;
+        float bumpWidth = bubbleDiameter * 1.65f;
         float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
         float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
         float bulgeTop = top - bulgeDepth;
