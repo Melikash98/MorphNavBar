@@ -116,8 +116,7 @@ public class MorphNavBar extends View {
     private static final float DEFAULT_LABEL_TOP_GAP_DP = 4.5f;
     private float horizontalContentPadding = dp(14f);
     private static final float LABEL_BOTTOM_PADDING_DP = 26f;
-    private static final long SHAKE_DURATION_MS = 520L;
-    private static final float SHAKE_AMPLITUDE_DP = 4.2f;
+    private static final float SHAKE_AMPLITUDE_DP = 12f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -412,9 +411,8 @@ public class MorphNavBar extends View {
             progress = 1f;
 
             if (oldIndex != index) {
-                startShake(index);
+                startShake(oldIndex);
             }
-
 
             updateContentDescription();
 
@@ -433,7 +431,7 @@ public class MorphNavBar extends View {
         startShake(index);
 
         animator = ValueAnimator.ofFloat(0f, 1f);
-        animator.setDuration(SHAKE_DURATION_MS);
+        animator.setDuration(animationDuration);
         animator.setInterpolator(positionInterpolator);
 
         final boolean[] cancelled = new boolean[1];
@@ -689,8 +687,8 @@ public class MorphNavBar extends View {
             float eased = positionInterpolator.getInterpolation(t);
             float inactiveAlpha = 1f - 0.88f * eased;
             Drawable icon = loadDrawable(item.getIconResId());
-            float shakeX = getShakeOffset(i);
             if (icon != null) {
+                float shakeX = (i == fromIndex) ? getShakeOffset(i) : 0f;
                 drawDrawable(canvas, icon, centerX + shakeX, inactiveIconY, inactiveIconColor, inactiveAlpha);
             }
         }
@@ -728,8 +726,7 @@ public class MorphNavBar extends View {
     }
 
     private void drawActiveIcon(Canvas canvas, float bubbleX, float eased) {
-        int iconIndex = toIndex;
-        int i = toIndex;
+        int iconIndex = eased < 0.5f ? fromIndex : toIndex;
         if (iconIndex < 0 || iconIndex >= items.size()) return;
         MorphNavTabItem.Model item = items.get(iconIndex);
         float scale = 1f + 0.085f * (float) Math.sin(Math.PI * eased);
@@ -948,12 +945,10 @@ public class MorphNavBar extends View {
         if (index < 0 || index >= items.size()) return;
 
         ValueAnimator running = shakeAnimators.remove(index);
-        if (running != null) {
-            running.cancel();
-        }
+        if (running != null) running.cancel();
 
         ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
-        animator.setDuration(SHAKE_DURATION_MS);
+        animator.setDuration(animationDuration);
         animator.setInterpolator(new FastOutSlowInInterpolator());
 
         animator.addUpdateListener(a -> {
