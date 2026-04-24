@@ -115,8 +115,8 @@ public class MorphNavBar extends View {
     private static final float DEFAULT_LABEL_TOP_GAP_DP = 4.5f;
     private float horizontalContentPadding = dp(14f);
     private static final float LABEL_BOTTOM_PADDING_DP = 26f;
-    private static final long SHAKE_DURATION_MS = 420L;
-    private static final float SHAKE_AMPLITUDE_DP = 3.2f;
+    private static final long SHAKE_DURATION_MS = 520L;
+    private static final float SHAKE_AMPLITUDE_DP = 4.2f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -456,11 +456,6 @@ public class MorphNavBar extends View {
                 selectedIndex = toIndex;
                 fromIndex = selectedIndex;
                 progress = 1f;
-
-                if (oldIndex != index) {
-                    startShake(oldIndex);
-                }
-
                 updateContentDescription();
 
                 if (listener != null && !items.isEmpty()) {
