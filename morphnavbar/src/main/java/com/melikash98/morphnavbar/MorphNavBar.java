@@ -729,6 +729,7 @@ public class MorphNavBar extends View {
 
     private void drawActiveIcon(Canvas canvas, float bubbleX, float eased) {
         int iconIndex = eased < 0.5f ? fromIndex : toIndex;
+        int i = toIndex;
         if (iconIndex < 0 || iconIndex >= items.size()) return;
         MorphNavTabItem.Model item = items.get(iconIndex);
         float scale = 1f + 0.085f * (float) Math.sin(Math.PI * eased);
@@ -737,7 +738,7 @@ public class MorphNavBar extends View {
                 : loadDrawable(item.getIconResId());
 
         if (icon != null) {
-            float shakeX = getShakeOffset(iconIndex);
+            float shakeX = getShakeOffset(i);
             drawDrawable(canvas, icon, bubbleX + shakeX, activeIconY, activeIconColor, 1f, scale);
         }
 
