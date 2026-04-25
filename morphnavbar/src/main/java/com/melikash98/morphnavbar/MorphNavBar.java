@@ -117,9 +117,9 @@ public class MorphNavBar extends View {
     private float horizontalContentPadding = dp(14f);
     private static final float LABEL_BOTTOM_PADDING_DP = 26f;
     private static final float SHAKE_AMPLITUDE_DP = 5.2f;
-    private static final int SHAKE_DURATION_MS = 360;
+    private static final int SHAKE_DURATION_MS = 560;
     private static final float SHAKE_FREQUENCY = 7.8f;
-    private static final float MAX_STRETCH_FACTOR = 2.25f;
+    private static final float MAX_STRETCH_FACTOR = 2.40f;
     private static final float STRETCH_DURATION_FACTOR = 0.65f;
 
 
@@ -703,13 +703,23 @@ public class MorphNavBar extends View {
     private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
         float stretchProgress = Math.abs(eased - 0.5f) * 2f;
-        float stretchAmount = (float) Math.pow(Math.sin(Math.PI * stretchProgress), 0.65f);
+        float stretchAmount = (float) Math.pow(Math.sin(Math.PI * stretchProgress), 0.70f);
         float stretchFactor = 1f + (MAX_STRETCH_FACTOR - 1f) * stretchAmount;
         float verticalCompress = 0.92f - 0.13f * (stretchFactor - 1f);
         float mainRadiusX = r * stretchFactor;
         float mainRadiusY = r * verticalCompress;
         float mainY = bubbleCenterY + dp(2f);
+        float scalePulse = 1f + 0.075f * (float) Math.sin(Math.PI * eased * 1.7f);
+        float finalRadiusX = r * stretchFactor * scalePulse;
+        float finalRadiusY = r * verticalCompress * scalePulse;
         Path mainPath = new Path();
+
+        float distanceToEnd = Math.min(eased, 1f - eased);
+        if (distanceToEnd < 0.08f) {
+            finalRadiusX = r * scalePulse;
+            finalRadiusY = finalRadiusX;
+        }
+
         mainPath.addOval(
                 bubbleX - mainRadiusX,
                 mainY - mainRadiusY,
@@ -723,8 +733,8 @@ public class MorphNavBar extends View {
 
         canvas.drawPath(bubblePath, bubblePaint);
         if (eased > 0.12f && eased < 0.88f) {
-            float highlightRadius = r * 0.21f * (1.8f - stretchFactor);
-            float highlightY = mainY - mainRadiusY * 0.48f;
+            float highlightRadius = r * 0.21f;
+            float highlightY = mainY - r * 0.48f;
             canvas.drawCircle(bubbleX, highlightY, highlightRadius, bubblePaint);
         }
     }
