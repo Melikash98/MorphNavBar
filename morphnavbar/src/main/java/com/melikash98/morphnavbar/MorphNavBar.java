@@ -659,58 +659,26 @@ public class MorphNavBar extends View {
 
     private Path buildBarPath(float bubbleX, float eased) {
         Path path = new Path();
-        float left = barRect.left;
-        float top = barRect.top;
-        float right = barRect.right;
-        float bottom = barRect.bottom;
+        float left = barRect.left, top = barRect.top, right = barRect.right, bottom = barRect.bottom;
 
         float radius = barRadius;
-
         float pulse = (float) Math.sin(Math.PI * eased);
         float bulgeDepth = dp(11f) + dp(16f) * pulse;
-
-        float bumpBaseWidth = bubbleDiameter * 1.72f;
-        float centerX = barRect.centerX();
-        float barHalfWidth = barRect.width() * 0.5f;
-
-        boolean nearLeftEdge = bubbleX < centerX - barHalfWidth * 0.38f;
-        boolean nearRightEdge = bubbleX > centerX + barHalfWidth * 0.38f;
-
-        float leftStretch = bumpBaseWidth * 0.5f;
-        float rightStretch = bumpBaseWidth * 0.5f;
-
-        if (nearLeftEdge) {
-            leftStretch = bumpBaseWidth * 0.28f;
-            rightStretch = bumpBaseWidth * 0.82f;
-        } else if (nearRightEdge) {
-            leftStretch = bumpBaseWidth * 0.82f;
-            rightStretch = bumpBaseWidth * 0.28f;
-        }
-        float bumpLeft = Math.max(left + radius * 0.85f, bubbleX - leftStretch);
-        float bumpRight = Math.min(right - radius * 0.85f, bubbleX + rightStretch);
-
+        float bumpWidth = bubbleDiameter * 1.65f;
+        float bumpLeft = Math.max(left + radius * 0.6f, bubbleX - bumpWidth / 2f);
+        float bumpRight = Math.min(right - radius * 0.6f, bubbleX + bumpWidth / 2f);
         float bulgeTop = top - bulgeDepth;
+
         path.moveTo(left + radius, top);
         path.lineTo(bumpLeft, top);
-        path.cubicTo(
-                bumpLeft + leftStretch * 0.30f, top,
-                bubbleX - bumpBaseWidth * 0.19f, bulgeTop,
-                bubbleX, bulgeTop
-        );
-
-        path.cubicTo(
-                bubbleX + bumpBaseWidth * 0.19f, bulgeTop,
-                bumpRight - rightStretch * 0.30f, top,
-                bumpRight, top
-        );
-
+        path.cubicTo(bumpLeft + bumpWidth * 0.25f, top, bubbleX - bumpWidth * 0.19f, bulgeTop, bubbleX, bulgeTop);
+        path.cubicTo(bubbleX + bumpWidth * 0.19f, bulgeTop, bumpRight - bumpWidth * 0.25f, top, bumpRight, top);
         path.lineTo(right - radius, top);
         path.quadTo(right, top, right, top + radius);
         path.lineTo(right, bottom);
         path.lineTo(left, bottom);
         path.lineTo(left, top + radius);
         path.quadTo(left, top, left + radius, top);
-
         path.close();
         return path;
     }
