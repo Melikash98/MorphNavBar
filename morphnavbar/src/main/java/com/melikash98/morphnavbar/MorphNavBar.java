@@ -119,6 +119,8 @@ public class MorphNavBar extends View {
     private static final float SHAKE_AMPLITUDE_DP = 5.2f;
     private static final int SHAKE_DURATION_MS = 360;
     private static final float SHAKE_FREQUENCY = 7.8f;
+    private static final float MAX_STRETCH_FACTOR = 1.85f;
+    private static final float STRETCH_DURATION_FACTOR = 0.65f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -700,16 +702,24 @@ public class MorphNavBar extends View {
 
     private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
-        float pulse = (float) Math.sin(Math.PI * eased);
-        float stretchFactor = 1f + 0.35f * (float) Math.sin(Math.PI * eased);
-        float mainRadiusX = r * stretchFactor * (0.97f - 0.03f * pulse);
-        float mainRadiusY = r * (0.97f - 0.03f * pulse);
-        float mainY = bubbleCenterY + dp(1.8f);
-        float crestRadius = r * (0.48f + 0.14f * pulse);
-        float crestY = bubbleCenterY - r * (0.34f + 0.07f * pulse);
+        float pulse = (float) Math.sin(Math.PI * eased * 2f);
+        float stretchProgress = Math.abs(eased - 0.5f) * 2f;
+        float stretchFactor = 1f + (MAX_STRETCH_FACTOR - 1f) *
+                (float) Math.sin(Math.PI * stretchProgress) * 0.92f;
+        float verticalCompress = 0.96f - 0.04f * pulse;
+        float mainRadiusX = r * stretchFactor;
+        float mainRadiusY = r * verticalCompress;
+        float mainY = bubbleCenterY + dp(1.5f);
+        float crestRadius = r * 0.52f * (1f / stretchFactor * 1.15f);
+        float crestOffset = (stretchFactor - 1f) * r * 0.25f;
+        float crestY =bubbleCenterY - r * 0.38f - crestOffset * 0.6f;
 
         Path main = new Path();
-        main.addOval(bubbleX - mainRadiusX, mainY - mainRadiusY, bubbleX + mainRadiusX, mainY + mainRadiusY, Path.Direction.CW);
+        main.addOval(bubbleX - mainRadiusX,
+                mainY - mainRadiusY,
+                bubbleX + mainRadiusX,
+                mainY + mainRadiusY,
+                Path.Direction.CW);
 
         Path crest = new Path();
         crest.addCircle(bubbleX, crestY, crestRadius, Path.Direction.CW);
@@ -723,9 +733,10 @@ public class MorphNavBar extends View {
         }
         canvas.drawPath(bubblePath, bubblePaint);
 
-        if (eased > 0.05f && eased < 0.95f) {
-            float highlightRadius = r * 0.21f * pulse;
-            canvas.drawCircle(bubbleX, crestY - highlightRadius * 0.22f, highlightRadius, bubblePaint);
+        if (eased > 0.1f && eased < 0.9f) {
+            float highlightRadius = r * 0.18f * (1f - stretchProgress * 0.4f);
+            float highlightY = crestY - highlightRadius * 0.3f;
+            canvas.drawCircle(bubbleX, highlightY, highlightRadius, bubblePaint);
         }
     }
 
