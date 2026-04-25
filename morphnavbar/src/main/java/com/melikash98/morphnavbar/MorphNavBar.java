@@ -42,7 +42,7 @@ import java.util.Map;
 
 
 public class MorphNavBar extends View {
-    private static final int DEFAULT_ANIMATION_DURATION = 620;
+    private static final int DEFAULT_ANIMATION_DURATION = 820;
 
     private final Paint barPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -703,7 +703,7 @@ public class MorphNavBar extends View {
     private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
         float stretchProgress = Math.abs(eased - 0.5f) * 2f;
-        float stretchAmount = (float) Math.pow(Math.sin(Math.PI * stretchProgress), 0.78f);
+        float stretchAmount = (float) Math.pow(Math.sin(Math.PI * stretchProgress), 0.65f);
         float stretchFactor = 1f + (MAX_STRETCH_FACTOR - 1f) * stretchAmount;
         float verticalCompress = 0.92f - 0.13f * (stretchFactor - 1f);
         float mainRadiusX = r * stretchFactor;
