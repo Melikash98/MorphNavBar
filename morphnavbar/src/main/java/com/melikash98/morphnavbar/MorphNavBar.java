@@ -702,30 +702,81 @@ public class MorphNavBar extends View {
 
     private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
-        float stretchProgress = Math.abs(eased - 0.5f) * 2f;
-        float stretchAmount = (float) Math.pow(Math.sin(Math.PI * stretchProgress), 0.65f);
-        float stretchFactor = 1f + (MAX_STRETCH_FACTOR - 1f) * stretchAmount;
-        float verticalCompress = 0.92f - 0.13f * (stretchFactor - 1f);
-        float mainRadiusX = r * stretchFactor;
-        float mainRadiusY = r * verticalCompress;
         float mainY = bubbleCenterY + dp(2f);
-        Path mainPath = new Path();
-        mainPath.addOval(
-                bubbleX - mainRadiusX,
-                mainY - mainRadiusY,
-                bubbleX + mainRadiusX,
-                mainY + mainRadiusY,
-                Path.Direction.CW
-        );
 
+        // محاسبه جهت حرکت
+        boolean movingRight = toIndex > fromIndex || (toIndex == fromIndex && eased > 0.5f);
+        float direction = movingRight ? 1f : -1f;
+
+        // مقدار کشیدگی نامتقارن (بین 0 تا 1)
+        float stretchProgress = Math.abs(eased - 0.5f) * 2f; // 0 در ابتدا/انتها، 1 در وسط
+        float asymmetricAmount = (float) Math.pow(Math.sin(Math.PI * stretchProgress), 0.7f); // می‌تونی 0.6 تا 0.85 امتحان کنی
+
+        // کشیدگی افقی پایه (برای اینکه همیشه کمی پهن‌تر از دایره باشه)
+        float baseHorizontalStretch = 1.18f; // کاملاً گرد = 1.0f، کمی پهن = 1.15~1.25
+
+        // کشیدگی اضافی نامتقارن بر اساس جهت
+        float extraStretch = asymmetricAmount * 0.45f; // شدت کشیدگی اضافی (0.3 تا 0.6 خوبه)
+
+        float leftStretch = baseHorizontalStretch + (movingRight ? extraStretch * 0.6f : extraStretch);
+        float rightStretch = baseHorizontalStretch + (movingRight ? extraStretch : extraStretch * 0.6f);
+
+        float leftRadiusX = r * leftStretch;
+        float rightRadiusX = r * rightStretch;
+
+        // فشردگی عمودی برای حس گردی بیشتر
+        float verticalCompress = 0.89f; // کمتر از 1 = کمی فشرده‌تر در ارتفاع
+
+        float mainRadiusY = r * verticalCompress;
+
+        // حالا Path حباب رو با Bezier می‌سازیم تا چپ و راست متفاوت باشن
         bubblePath.reset();
-        bubblePath.set(mainPath);
+
+        // شروع از پایین چپ حباب
+        float startX = bubbleX - (leftRadiusX * 0.92f);
+        float bottomY = mainY + mainRadiusY * 0.85f;
+
+        bubblePath.moveTo(startX, mainY); // نقطه شروع تقریبی بالا-چپ
+
+        // منحنی سمت چپ (با کنترل بیشتر برای کشیدگی)
+        float cp1xLeft = bubbleX - leftRadiusX * 1.05f;
+        float cp1yLeft = mainY - mainRadiusY * 0.65f;
+        float cp2xLeft = bubbleX - leftRadiusX * 0.75f;
+        float cp2yLeft = mainY - mainRadiusY * 1.15f;
+
+        bubblePath.cubicTo(cp1xLeft, cp1yLeft, cp2xLeft, cp2yLeft, bubbleX, mainY - mainRadiusY);
+
+        // منحنی بالا (تقریباً گرد)
+        float cpTopRightX = bubbleX + rightRadiusX * 0.75f;
+        float cpTopRightY = mainY - mainRadiusY * 1.12f;
+        bubblePath.cubicTo(cpTopRightX, mainY - mainRadiusY * 1.18f,
+                bubbleX + rightRadiusX * 1.02f, mainY - mainRadiusY * 0.6f,
+                bubbleX + rightRadiusX * 0.95f, mainY);
+
+        // منحنی سمت راست (با کنترل متفاوت)
+        float cp3xRight = bubbleX + rightRadiusX * 1.08f;
+        float cp3yRight = mainY + mainRadiusY * 0.55f;
+        float cp4xRight = bubbleX + rightRadiusX * 0.82f;
+        float cp4yRight = bottomY + mainRadiusY * 0.2f;
+
+        bubblePath.cubicTo(cp3xRight, cp3yRight,
+                cp4xRight, cp4yRight,
+                bubbleX + rightRadiusX * 0.88f, bottomY);
+
+        // بستن از پایین به چپ
+        bubblePath.cubicTo(bubbleX - leftRadiusX * 0.7f, bottomY + mainRadiusY * 0.3f,
+                startX - 8f, mainY + mainRadiusY * 0.7f,
+                startX, mainY);
+
+        bubblePath.close();
 
         canvas.drawPath(bubblePath, bubblePaint);
-        if (eased > 0.12f && eased < 0.88f) {
-            float highlightRadius = r * 0.21f * (1.8f - stretchFactor);
-            float highlightY = mainY - mainRadiusY * 0.48f;
-            canvas.drawCircle(bubbleX, highlightY, highlightRadius, bubblePaint);
+
+        // هایلایت (اختیاری - می‌تونی تنظیم کنی)
+        if (eased > 0.15f && eased < 0.85f) {
+            float highlightR = r * 0.19f * (1.6f - (leftStretch + rightStretch)/2f);
+            float highlightY = mainY - mainRadiusY * 0.52f;
+            canvas.drawCircle(bubbleX - 4f * direction, highlightY, highlightR, bubblePaint); // کمی جابجا برای حس سه‌بعدی
         }
     }
 
