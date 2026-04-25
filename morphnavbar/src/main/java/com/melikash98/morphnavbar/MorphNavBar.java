@@ -42,7 +42,7 @@ import java.util.Map;
 
 
 public class MorphNavBar extends View {
-    private static final int DEFAULT_ANIMATION_DURATION = 980;
+    private static final int DEFAULT_ANIMATION_DURATION = 1400;
 
     private final Paint barPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -686,7 +686,6 @@ public class MorphNavBar extends View {
     private void drawInactiveIcons(Canvas canvas, float bubbleX) {
         float influenceRadius = bubbleDiameter * 0.9f;
         for (int i = 0; i < items.size(); i++) {
-            if (i == selectedIndex && progress > 0.95f) continue;
             MorphNavTabItem.Model item = items.get(i);
             float centerX = centerXs.get(i);
             float distance = Math.abs(centerX - bubbleX);
