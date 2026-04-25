@@ -715,9 +715,13 @@ public class MorphNavBar extends View {
         Path mainPath = new Path();
 
         float distanceToEnd = Math.min(eased, 1f - eased);
-        if (distanceToEnd < 0.08f) {
-            finalRadiusX = r * scalePulse;
-            finalRadiusY = finalRadiusX;
+        if (distanceToEnd < 0.22f) {
+            float circleFactor = (distanceToEnd / 0.22f);
+            float targetRadiusX = r * stretchFactor * scalePulse;
+            float targetRadiusY = r * verticalCompress * scalePulse;
+
+            finalRadiusX = lerp(targetRadiusX, r * scalePulse, 1f - circleFactor);
+            finalRadiusY = lerp(targetRadiusY, r * scalePulse, 1f - circleFactor);
         }
 
         mainPath.addOval(
