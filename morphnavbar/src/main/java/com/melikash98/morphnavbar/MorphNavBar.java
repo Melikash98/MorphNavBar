@@ -119,7 +119,7 @@ public class MorphNavBar extends View {
     private static final float SHAKE_AMPLITUDE_DP = 5.2f;
     private static final int SHAKE_DURATION_MS = 360;
     private static final float SHAKE_FREQUENCY = 7.8f;
-    private static final float MAX_STRETCH_FACTOR = 1.85f;
+    private static final float MAX_STRETCH_FACTOR = 2.25f;
     private static final float STRETCH_DURATION_FACTOR = 0.65f;
 
 
@@ -702,40 +702,29 @@ public class MorphNavBar extends View {
 
     private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
-        float pulse = (float) Math.sin(Math.PI * eased * 2f);
         float stretchProgress = Math.abs(eased - 0.5f) * 2f;
-        float stretchFactor = 1f + (MAX_STRETCH_FACTOR - 1f) *
-                (float) Math.sin(Math.PI * stretchProgress) * 0.92f;
-        float verticalCompress = 0.96f - 0.04f * pulse;
+        float stretchAmount = (float) Math.pow(Math.sin(Math.PI * stretchProgress), 0.78f);
+        float stretchFactor = 1f + (MAX_STRETCH_FACTOR - 1f) * stretchAmount;
+        float verticalCompress = 0.92f - 0.13f * (stretchFactor - 1f);
         float mainRadiusX = r * stretchFactor;
         float mainRadiusY = r * verticalCompress;
-        float mainY = bubbleCenterY + dp(1.5f);
-        float crestRadius = r * 0.52f * (1f / stretchFactor * 1.15f);
-        float crestOffset = (stretchFactor - 1f) * r * 0.25f;
-        float crestY =bubbleCenterY - r * 0.38f - crestOffset * 0.6f;
-
-        Path main = new Path();
-        main.addOval(bubbleX - mainRadiusX,
+        float mainY = bubbleCenterY + dp(2f);
+        Path mainPath = new Path();
+        mainPath.addOval(
+                bubbleX - mainRadiusX,
                 mainY - mainRadiusY,
                 bubbleX + mainRadiusX,
                 mainY + mainRadiusY,
-                Path.Direction.CW);
-
-        Path crest = new Path();
-        crest.addCircle(bubbleX, crestY, crestRadius, Path.Direction.CW);
+                Path.Direction.CW
+        );
 
         bubblePath.reset();
-        bubblePath.set(main);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            bubblePath.op(crest, Path.Op.UNION);
-        } else {
-            bubblePath.addPath(crest);
-        }
-        canvas.drawPath(bubblePath, bubblePaint);
+        bubblePath.set(mainPath);
 
-        if (eased > 0.1f && eased < 0.9f) {
-            float highlightRadius = r * 0.18f * (1f - stretchProgress * 0.4f);
-            float highlightY = crestY - highlightRadius * 0.3f;
+        canvas.drawPath(bubblePath, bubblePaint);
+        if (eased > 0.12f && eased < 0.88f) {
+            float highlightRadius = r * 0.21f * (1.8f - stretchFactor);
+            float highlightY = mainY - mainRadiusY * 0.48f;
             canvas.drawCircle(bubbleX, highlightY, highlightRadius, bubblePaint);
         }
     }
