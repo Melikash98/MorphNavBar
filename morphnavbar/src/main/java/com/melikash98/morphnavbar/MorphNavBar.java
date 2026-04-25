@@ -116,7 +116,9 @@ public class MorphNavBar extends View {
     private static final float DEFAULT_LABEL_TOP_GAP_DP = 4.5f;
     private float horizontalContentPadding = dp(14f);
     private static final float LABEL_BOTTOM_PADDING_DP = 26f;
-    private static final float SHAKE_AMPLITUDE_DP = 12f;
+    private static final float SHAKE_AMPLITUDE_DP = 5.5f;
+    private static final int SHAKE_DURATION_MS = 380;
+    private static final float SHAKE_FREQUENCY = 7.5f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -688,7 +690,7 @@ public class MorphNavBar extends View {
             float inactiveAlpha = 1f - 0.88f * eased;
             Drawable icon = loadDrawable(item.getIconResId());
             if (icon != null) {
-                float shakeX = (i == fromIndex) ? getShakeOffset(i) : 0f;
+                float shakeX = getShakeOffset(i);
                 drawDrawable(canvas, icon, centerX + shakeX, inactiveIconY, inactiveIconColor, inactiveAlpha);
             }
         }
@@ -943,18 +945,18 @@ public class MorphNavBar extends View {
 
     private void startShake(int index) {
         if (index < 0 || index >= items.size()) return;
-
         ValueAnimator running = shakeAnimators.remove(index);
         if (running != null) running.cancel();
 
         ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
-        animator.setDuration(animationDuration);
-        animator.setInterpolator(new FastOutSlowInInterpolator());
+        animator.setDuration(SHAKE_DURATION_MS);
+        animator.setInterpolator(new LinearInterpolator());
 
         animator.addUpdateListener(a -> {
             float t = (float) a.getAnimatedValue();
-            float damping = (float) Math.pow(1f - t, 2.4f);
-            float oscillation = (float) Math.sin(t * Math.PI * 5.2f);
+            float damping = (float) Math.pow(1f - t, 3.2f);
+            float oscillation = (float) Math.sin(t * Math.PI * SHAKE_FREQUENCY);
+
             float amplitude = dp(SHAKE_AMPLITUDE_DP);
             float offset = oscillation * damping * amplitude;
 
@@ -974,6 +976,7 @@ public class MorphNavBar extends View {
             public void onAnimationCancel(Animator animation) {
                 shakeOffsets.remove(index);
                 shakeAnimators.remove(index);
+                invalidate();
             }
         });
 
