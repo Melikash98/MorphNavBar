@@ -42,7 +42,7 @@ import java.util.Map;
 
 
 public class MorphNavBar extends View {
-    private static final int DEFAULT_ANIMATION_DURATION = 1080;
+    private static final int DEFAULT_ANIMATION_DURATION = 1400;
 
     private final Paint barPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -119,8 +119,8 @@ public class MorphNavBar extends View {
     private static final float SHAKE_AMPLITUDE_DP = 5.2f;
     private static final int SHAKE_DURATION_MS = 760;
     private static final float SHAKE_FREQUENCY = 7.8f;
-    private static final float MAX_STRETCH_FACTOR = 2.25f;
-    private static final float STRETCH_DURATION_FACTOR = 0.65f;
+    private static final float MAX_STRETCH_FACTOR = 2.40f;
+    private static final float STRETCH_DURATION_FACTOR = 0.40f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -702,8 +702,8 @@ public class MorphNavBar extends View {
 
     private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
-        float stretchProgress = Math.abs(eased - 0.5f) * 2f;
-        float stretchAmount = (float) Math.pow(Math.sin(Math.PI * stretchProgress), 0.65f);
+        float stretchProgress = (float) Math.pow(Math.abs(eased - 0.5f) * 2.0f, STRETCH_DURATION_FACTOR);
+        float stretchAmount = (float) Math.pow(Math.sin(Math.PI * stretchProgress), 0.55f);
         float stretchFactor = 1f + (MAX_STRETCH_FACTOR - 1f) * stretchAmount;
         float verticalCompress = 0.92f - 0.13f * (stretchFactor - 1f);
         float mainRadiusX = r * stretchFactor;
