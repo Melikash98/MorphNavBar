@@ -735,7 +735,7 @@ public class MorphNavBar extends View {
         int iconIndex = (eased < 0.45f) ? fromIndex : toIndex;
         if (iconIndex < 0 || iconIndex >= items.size()) return;
         MorphNavTabItem.Model item = items.get(iconIndex);
-        float scale = 1f + 0.085f * (float) Math.sin(Math.PI * eased);
+        float scale = 1f + 0.085f * (float) Math.sin(Math.PI * eased * 1.1f);
         Drawable icon = item.getSelectedIconResId() != 0
                 ? loadDrawable(item.getSelectedIconResId())
                 : loadDrawable(item.getIconResId());
@@ -877,7 +877,14 @@ public class MorphNavBar extends View {
             float iconCenterX = centerXs.get(i);
             float iconCenterY = inactiveIconY;
 
-            if (i == selectedIndex) {
+            boolean isMovingToThis = (i == toIndex);
+            boolean isMovingFromThis = (i == fromIndex);
+
+            if (isMovingToThis && eased > 0.5f) {
+                iconCenterX = bubbleX;
+                iconCenterY = activeIconY;
+            }
+            else if (isMovingFromThis && eased < 0.5f) {
                 iconCenterX = bubbleX;
                 iconCenterY = activeIconY;
             }
