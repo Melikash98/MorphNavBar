@@ -116,9 +116,9 @@ public class MorphNavBar extends View {
     private static final float DEFAULT_LABEL_TOP_GAP_DP = 4.5f;
     private float horizontalContentPadding = dp(14f);
     private static final float LABEL_BOTTOM_PADDING_DP = 26f;
-    private static final float SHAKE_AMPLITUDE_DP = 5.5f;
-    private static final int SHAKE_DURATION_MS = 380;
-    private static final float SHAKE_FREQUENCY = 7.5f;
+    private static final float SHAKE_AMPLITUDE_DP = 5.2f;
+    private static final int SHAKE_DURATION_MS = 360;
+    private static final float SHAKE_FREQUENCY = 7.8f;
 
 
     public MorphNavBar(@NonNull Context context) {
@@ -414,6 +414,8 @@ public class MorphNavBar extends View {
 
             if (oldIndex != index) {
                 startShake(oldIndex);
+            } else if (reselectListener != null) {
+                startShake(index);
             }
 
             updateContentDescription();
@@ -430,7 +432,7 @@ public class MorphNavBar extends View {
         toIndex = index;
         progress = 0f;
 
-        startShake(index);
+        startShake(fromIndex);
 
         animator = ValueAnimator.ofFloat(0f, 1f);
         animator.setDuration(animationDuration);
@@ -737,7 +739,7 @@ public class MorphNavBar extends View {
                 : loadDrawable(item.getIconResId());
 
         if (icon != null) {
-            float shakeX = getShakeOffset(iconIndex);
+            float shakeX = (eased < 0.5f) ? getShakeOffset(iconIndex) : 0f;
             drawDrawable(canvas, icon, bubbleX + shakeX, activeIconY, activeIconColor, 1f, scale);
         }
 
@@ -954,7 +956,8 @@ public class MorphNavBar extends View {
 
         animator.addUpdateListener(a -> {
             float t = (float) a.getAnimatedValue();
-            float damping = (float) Math.pow(1f - t, 3.2f);
+            float damping = (float) Math.pow(1f - t, 3.5f);
+
             float oscillation = (float) Math.sin(t * Math.PI * SHAKE_FREQUENCY);
 
             float amplitude = dp(SHAKE_AMPLITUDE_DP);
