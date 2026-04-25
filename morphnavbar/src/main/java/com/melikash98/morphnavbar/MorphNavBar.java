@@ -702,71 +702,30 @@ public class MorphNavBar extends View {
 
     private void drawBubble(Canvas canvas, float bubbleX, float eased) {
         float r = bubbleDiameter / 2f;
-        float centerY = bubbleCenterY + dp(3f);
-
-        // تشخیص جهت حرکت
-        boolean movingRight = (toIndex > fromIndex) || (toIndex == fromIndex && eased > 0.5f);
-        float dir = movingRight ? 1f : -1f;
-
-        // پیشرفت انیمیشن برای کشیدگی
-        float progress = Math.abs(eased - 0.5f) * 2f;                    // 0 → 1 → 0
-        float stretchAmount = (float) Math.pow(Math.sin(Math.PI * progress), 0.72f);
-
-        // ==================== تنظیمات (اینجا رو تغییر بده) ====================
-        float baseWidthFactor = 1.16f;      // کشیدگی پایه (هر دو طرف)
-        float maxOppositeStretch = 0.82f;   // کشیدگی اضافی سمت مخالف ← این مهمه
-
-        float leftStretch  = baseWidthFactor + (movingRight ? maxOppositeStretch * stretchAmount : 0.12f);
-        float rightStretch = baseWidthFactor + (movingRight ? 0.12f : maxOppositeStretch * stretchAmount);
-
-        float radiusY = r * 0.905f;         // کمی فشرده‌تر برای حس گردی بهتر
-
-        float leftWidth  = r * leftStretch;
-        float rightWidth = r * rightStretch;
+        float stretchProgress = Math.abs(eased - 0.5f) * 2f;
+        float stretchAmount = (float) Math.pow(Math.sin(Math.PI * stretchProgress), 0.65f);
+        float stretchFactor = 1f + (MAX_STRETCH_FACTOR - 1f) * stretchAmount;
+        float verticalCompress = 0.92f - 0.13f * (stretchFactor - 1f);
+        float mainRadiusX = r * stretchFactor;
+        float mainRadiusY = r * verticalCompress;
+        float mainY = bubbleCenterY + dp(2f);
+        Path mainPath = new Path();
+        mainPath.addOval(
+                bubbleX - mainRadiusX,
+                mainY - mainRadiusY,
+                bubbleX + mainRadiusX,
+                mainY + mainRadiusY,
+                Path.Direction.CW
+        );
 
         bubblePath.reset();
-
-        // نقاط اصلی
-        float topY = centerY - radiusY;
-        float bottomY = centerY + radiusY * 0.96f;
-
-        // شروع از چپ
-        float leftX = bubbleX - leftWidth;
-
-        bubblePath.moveTo(leftX, centerY);
-
-        // منحنی سمت چپ (وقتی به راست می‌ره این سمت خیلی کشیده می‌شه)
-        bubblePath.cubicTo(
-                bubbleX - leftWidth * 1.12f, centerY - radiusY * 0.35f,     // cp1
-                bubbleX - leftWidth * 0.88f, topY - radiusY * 0.22f,       // cp2
-                bubbleX, topY);                                             // top center
-
-        // منحنی بالای حباب (تقریباً گرد)
-        bubblePath.cubicTo(
-                bubbleX + rightWidth * 0.45f, topY - radiusY * 0.38f,
-                bubbleX + rightWidth * 0.82f, topY - radiusY * 0.25f,
-                bubbleX + rightWidth * 0.96f, centerY);
-
-        // منحنی سمت راست
-        bubblePath.cubicTo(
-                bubbleX + rightWidth * 1.09f, centerY + radiusY * 0.42f,
-                bubbleX + rightWidth * 0.85f, bottomY + radiusY * 0.18f,
-                bubbleX + rightWidth * 0.82f, bottomY);
-
-        // بستن پایین به چپ
-        bubblePath.cubicTo(
-                bubbleX - leftWidth * 0.68f, bottomY + radiusY * 0.38f,
-                leftX - dp(8), centerY + radiusY * 0.72f,
-                leftX, centerY);
-
-        bubblePath.close();
+        bubblePath.set(mainPath);
 
         canvas.drawPath(bubblePath, bubblePaint);
-
-        // هایلایت
-        if (eased > 0.15f && eased < 0.85f) {
-            float hlRadius = r * 0.21f * (1.35f - (leftStretch + rightStretch) / 2f);
-            canvas.drawCircle(bubbleX - dir * 5f, centerY - radiusY * 0.48f, hlRadius, bubblePaint);
+        if (eased > 0.12f && eased < 0.88f) {
+            float highlightRadius = r * 0.21f * (1.8f - stretchFactor);
+            float highlightY = mainY - mainRadiusY * 0.48f;
+            canvas.drawCircle(bubbleX, highlightY, highlightRadius, bubblePaint);
         }
     }
 
