@@ -721,10 +721,10 @@ public class MorphNavBar extends View {
         }
 
         mainPath.addOval(
-                bubbleX - mainRadiusX,
-                mainY - mainRadiusY,
-                bubbleX + mainRadiusX,
-                mainY + mainRadiusY,
+                bubbleX - finalRadiusX,
+                mainY - finalRadiusY,
+                bubbleX + finalRadiusX,
+                mainY + finalRadiusY,
                 Path.Direction.CW
         );
 
