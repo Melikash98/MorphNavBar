@@ -14,27 +14,22 @@ MorphNavBar is a modern Android custom bottom navigation component built for sty
 
 ## ✨ Features
 
-- **Morphing bar animation** with dynamic cubic Bézier top bump synced to active tab movement  
-- **Elastic selection bubble** with horizontal stretch and smooth rebound transition  
-- **Proximity icon fading** as the bubble approaches and passes each tab  
-- **Damped shake feedback** on tap and reselect interactions with spring-like motion  
-- **Smart badge tracking** that follows icons during animated tab transitions  
-- **Smooth label color blending** between inactive and selected states  
-- **Highly customizable** colors, sizes, labels, badges, shadows, and timings  
-- **Rich listener support** for click, select, reselect, and show events  
-- **Works with both Kotlin and Java** projects  
-- **Zero heavy dependencies** – pure AndroidX custom View implementation  
-- **JitPack ready** for fast and simple integration  
+- **Morphing Bar** — The bar’s top edge morphs with a cubic Bézier bump above the active tab.  
+- **Elastic Bubble** — The selection bubble stretches up to **2.4×** horizontally and compresses vertically while moving.  
+- **Proximity Fade** — Inactive icons fade near the bubble and return after it passes.  
+- **Damped Shake** — Each tap triggers a **7.8 Hz** damped shake for **760 ms** on the previous tab.  
+- **Badge Tracking** — Badges follow their icon during transition and move with the active state.  
+- **Label Blending** — Label colors smoothly blend between inactive and selected states by bubble proximity. 
 
 ---
 
-## 📺 Demo
+##  Demo
 
 <img src="https://raw.githubusercontent.com/Melikash98/MorphNavBar/main/demo_lib.gif" alt="textLib.gif" width="45%"   height="45%" style="margin-right: 10px;padding-top: 6rem;" />
 
 ---
 
-## 📦 Installation
+##  Installation
 
 ### 1. Add JitPack repository
 
@@ -42,97 +37,114 @@ In your **root** `settings.gradle` (or `settings.gradle.kts`):
 
 ```gradle
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenCentral()
-        maven { url 'https://jitpack.io' }
-    }
-}
+		repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+		repositories {
+			mavenCentral()
+			maven { url 'https://jitpack.io' }
+		}
+	}
 ```
 ### Step 2: Add dependency
 
 ```gradle
 dependencies {
-     implementation 'com.github.Melikash98:Editify:v1.4.8'
-}
+	        implementation 'com.github.Melikash98:MorphNavBar:v2.2.8'
+	}
 ```
-## 🛠️ Usage
+##  Usage
 
 ### XML
 ```xml
-<com.melikash98.editify.CustomInputEdit
-    android:id="@+id/myCustomInput"
+<com.melikash98.morphnavbar.MorphNavBar
+    android:id="@+id/morphNavBar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
 
-    <!-- Hint configuration -->
-    app:hintText="Username"                    <!-- Main hint text -->
-    app:hintIcon="@drawable/ic_user"          <!-- Icon inside hint -->
-    app:hintColor="@color/gray"               <!-- Default hint color -->
-    app:hintActiveColor="@color/green"        <!-- Color when focused/active -->
-    app:hintBackgroundColor="@color/white"    <!-- Background of the floating hint -->
+    <!-- Colors -->
+    app:lbv_barColor="@android:color/white"                 <!-- Main bar background color -->
+    app:lbv_shadowColor="#22000000"                         <!-- Bar shadow color -->
+    app:lbv_selectedColor="#00CFC0"                         <!-- Active bubble color -->
+    app:lbv_unselectedColor="#00CFC0"                       <!-- Stored unselected accent color -->
+    app:lbv_activeIconColor="@android:color/white"          <!-- Selected tab icon tint -->
+    app:lbv_inactiveIconColor="#00CFC0"                     <!-- Inactive tab icon tint -->
 
-    <!-- Input text styling -->
-    app:inputColor="@color/black"             <!-- Text color inside the input field -->
-    app:textColor="@color/black"              <!-- Fallback text color -->
+    <!-- Dimensions -->
+    app:lbv_barRadius="26dp"                                <!-- Corner radius of the bar -->
+    app:lbv_barHeight="100dp"                               <!-- Total height of the navigation bar -->
+    app:lbv_barSideMargin="0dp"                             <!-- Left and right outer margin -->
+    app:lbv_barBottomMargin="0dp"                           <!-- Bottom margin of the bar -->
+    app:lbv_itemIconSize="34dp"                             <!-- Size of each tab icon -->
+    app:lbv_shadowBlur="12dp"                               <!-- Shadow blur radius -->
+    app:lbv_shadowDy="4dp"                                  <!-- Shadow vertical offset -->
 
-    <!-- Font & Size Configuration -->
-    app:hintFamily="@font/vazirmatn_medium"   <!-- Hint font (supports @font/ or font family name) -->
-    app:hintSize="16sp"                       <!-- Hint text size -->
+    <!-- Animation -->
+    app:lbv_animationDuration="1400"                        <!-- Selection animation duration in ms -->
 
-    app:inputFamily="@font/vazirmatn"         <!-- Input field font -->
-    app:inputSize="17sp"                      <!-- Input text size -->
+    <!-- Labels -->
+    app:lbv_showLabels="true"                               <!-- Show labels below tabs -->
+    app:lbv_showLabelOnlyOnSelected="false"                 <!-- Show label only for selected tab -->
+    app:lbv_labelTextSize="14sp"                            <!-- Label text size -->
+    app:lbv_labelFontFamily="sans-serif"                    <!-- Label typeface family -->
 
-    app:helperFamily="@font/vazirmatn_light"  <!-- Helper/Warning/Error font -->
-    app:helperSize="13.5sp"                   <!-- Helper/Warning/Error text size -->
-
-    <!-- Background states -->
-    app:activeBackground="@drawable/input_active"     <!-- Background when focused -->
-    app:inactiveBackground="@drawable/input_inactive" <!-- Default background -->
-
-    <!-- Helper / Warning / Error messages -->
-    app:helperText="Enter your username"      <!-- Helper message -->
-    app:warningText="Please check your input" <!-- Warning message -->
-    app:errorText="This field is required"    <!-- Error message -->
-
-    <!-- Password toggle icons -->
-    app:passShow="@drawable/ic_show"          <!-- Icon when password is visible -->
-    app:passHide="@drawable/ic_hide"          <!-- Icon when password is hidden -->
-
-    <!-- Layout direction -->
-    app:rightDirection="false"                <!-- Set true for RTL languages -->
-
-    <!-- Input Type (especially for passwords) -->
-    <!-- app:inputType="129" -->              <!-- Text Password (hidden) -->
-    <!-- app:inputType="18"  -->              <!-- Number Password -->
-    <!-- app:inputType="1"   -->              <!-- Normal text (default) -->
-    />
+    <!-- Badges -->
+    app:lbv_badgeBackgroundColor="@android:color/holo_red_light"  <!-- Badge background color -->
+    app:lbv_badgeTextColor="@android:color/white"                 <!-- Badge text color -->
+    app:lbv_badgeTextSize="11sp"                                  <!-- Badge text size -->
+/>
 ```
 
 
 ---
 ## 🎯 Java Usage
 
+
+**Define tabs**
+Each tab is a MorphNavTabItem.Model. You can optionally provide a separate drawable for the active (inside-bubble) state:
+MorphNavBar navBar = findViewById(R.id.morphNavBar);
 ```java
-// Get reference to the custom input view
-CustomInputEdit input = findViewById(R.id.myCustomInput);
 
-// Get current text value (trimmed)
-String text = input.getText();
-
-// Set text programmatically
-input.setText("Hello");
-
-// Show helper message (green state)
-input.setHelperText("Helper message");
-
-// Show warning message (yellow state)
-input.setWarningText("Warning message");
-
-// Show error message (red state)
-input.setErrorText("Error message");
+// Varargs — set all tabs at once
+navBar.setTabs(
+    new MorphNavTabItem.Model("Home",    R.drawable.ic_home,    R.drawable.ic_home_filled),
+    new MorphNavTabItem.Model("Search",  R.drawable.ic_search,  R.drawable.ic_search_filled),
+    new MorphNavTabItem.Model("Inbox",   R.drawable.ic_inbox,   R.drawable.ic_inbox_filled),
+    new MorphNavTabItem.Model("Profile", R.drawable.ic_profile, R.drawable.ic_profile_filled)
+);
 ```
+Or add tabs incrementally:
 
+```java
+
+navBar.setSelectedIndex(2);           // animated morph transition
+navBar.setSelectedIndex(2, false);    // instant jump without animation
+navBar.show(0);                       // alias for setSelectedIndex(0)
+
+int current = navBar.getSelectedIndex();
+int total   = navBar.getItemCount();
+
+```
+Navigate programmatically
+
+```java
+navBar.setSelectedIndex(2);           // animated morph transition
+navBar.setSelectedIndex(2, false);    // instant jump without animation
+navBar.show(0);                       // alias for setSelectedIndex(0)
+
+int current = navBar.getSelectedIndex();
+int total   = navBar.getItemCount();
+
+```
+Badge counts
+
+```java
+
+navBar.setCount(1, "5");     // string badge on tab at index 1
+navBar.setCount(2, 99);      // numeric badge on tab at index 2
+navBar.clearCount(1);        // remove badge from tab 1
+navBar.clearAllCounts();     // remove all badges
+
+```
+Badges automatically track their icon during the morph animation — they follow the bubble from inactiveIconY to activeIconY at the transition midpoint.
 ---
 ## 🎨 Attributes
 
