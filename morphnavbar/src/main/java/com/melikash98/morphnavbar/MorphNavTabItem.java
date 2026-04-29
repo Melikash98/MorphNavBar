@@ -8,7 +8,8 @@ import androidx.annotation.Nullable;
 public final class MorphNavTabItem {
     public MorphNavTabItem() {
     }
-    public static final class Model{
+
+    public static final class Model {
         @NonNull
         private final CharSequence label;
 
