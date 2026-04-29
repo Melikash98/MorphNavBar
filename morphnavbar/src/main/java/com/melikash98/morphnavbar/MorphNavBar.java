@@ -732,7 +732,9 @@ public class MorphNavBar extends View {
     }
 
     private void drawActiveIcon(Canvas canvas, float bubbleX, float eased) {
-        int iconIndex = (eased < 0.45f) ? fromIndex : toIndex;
+        float distFromFrom = Math.abs(bubbleX - getCenterX(fromIndex));
+        float distFromTo   = Math.abs(bubbleX - getCenterX(toIndex));
+        int iconIndex = (distFromTo <= distFromFrom) ? toIndex : fromIndex;
         if (iconIndex < 0 || iconIndex >= items.size()) return;
         MorphNavTabItem.Model item = items.get(iconIndex);
         float scale = 1f + 0.085f * (float) Math.sin(Math.PI * eased * 1.1f);
@@ -786,9 +788,9 @@ public class MorphNavBar extends View {
             float centerX = centerXs.get(i);
             float distance = Math.abs(centerX - bubbleX);
             float t = clamp(1f - (distance / influenceRadius), 0f, 1f);
-            eased = positionInterpolator.getInterpolation(t);
+            float localEased = positionInterpolator.getInterpolation(t);
 
-            int color = ColorUtils.blendARGB(inactiveIconColor, selectedColor, eased);
+            int color = ColorUtils.blendARGB(inactiveIconColor, selectedColor, localEased);
             labelPaint.setColor(color);
 
             CharSequence ellipsized = TextUtils.ellipsize(
