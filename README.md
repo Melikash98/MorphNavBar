@@ -95,7 +95,7 @@ dependencies {
 
 
 ---
-## 🎯 Java Usage
+##  Java Usage
 
 
 **Define tabs**
@@ -145,7 +145,28 @@ navBar.clearAllCounts();     // remove all badges
 
 ```
 Badges automatically track their icon during the morph animation — they follow the bubble from inactiveIconY to activeIconY at the transition midpoint.
+
 ---
+## Kotlin Usage
+---
+```kotlin
+val navBar = findViewById<MorphNavBar>(R.id.morphNavBar)
+
+navBar.setTabs(
+    MorphNavTabItem.Model("Home",    R.drawable.ic_home,    R.drawable.ic_home_filled),
+    MorphNavTabItem.Model("Search",  R.drawable.ic_search,  R.drawable.ic_search_filled),
+    MorphNavTabItem.Model("Profile", R.drawable.ic_profile, R.drawable.ic_profile_filled)
+)
+
+navBar.setOnTabSelectedListener { index, item ->
+    // called after the morph animation completes
+}
+
+navBar.setCount(0, "3")
+navBar.setSelectedIndex(1)
+```
+---
+
 ## 🎨 Attributes
 
 
