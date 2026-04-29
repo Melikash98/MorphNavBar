@@ -251,7 +251,7 @@ This project is licensed under the MIT License. See LICENSE for details.
 ndroid bottom navigation bar, morphing bubble navbar, elastic stretch animation android, canvas custom view android, damped shake animation, animated tab bar android, physics navigation bar android
 
 ---
----
+
 ## 👩‍💻 Author
 
 If you find **MorphNavBar** useful, please consider giving it a **⭐ star on GitHub** — it helps the project grow and motivates further development.
