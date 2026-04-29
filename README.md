@@ -167,71 +167,95 @@ navBar.setSelectedIndex(1)
 ```
 ---
 
-## 🎨 Attributes
-
-
-| Attribute | Description |
-|----------|------------|
-| hintText | Hint text |
-| input | Default input text |
-| helperText | Helper message |
-| warningText | Warning message |
-| errorText | Error message |
-| hintIcon | Icon shown inside the hint |
-| passShow | Show password icon |
-| passHide | Hide password icon |
-| helperIcon | Helper icon |
-| warningIcon | Warning icon |
-| errorIcon | Error icon |
-| activeBackground | Background when the field is focused/active |
-| inactiveBackground | Default (inactive) background |
-| hintColor | Default hint color |
-| hintActiveColor | Hint color when focused |
-| inputColor | Color of text inside the input field |
-| helperColor | Helper text and icon color |
-| warningColor | Warning text and icon color |
-| errorColor | Error text and icon color |
-| inputType | Input type (especially useful for passwords) |
-| rightDirection | Enable RTL layout (true/false) |
-| hintFamily | Font family for hint (@font/ resource or font name) |
-| hintSize | Text size for hint |
-| inputFamily | Font family for input field |
-| inputSize | Text size for input field |
-| helperFamily | Font family for helper/warning/error texts |
-| helperSize | Text size for helper/warning/error texts |
-
+## Listeners
 ---
+MorphNavBar exposes four distinct interfaces to cover every interaction scenario:
+```java
 
-## 🔤 Input Types
+// Fires once, after the bubble animation fully settles on the new tab
+navBar.setOnTabSelectedListener((index, item) -> {
+    // safe place to switch fragments
+});
 
-```xml
-app:inputType="1"      <!-- Normal Text -->
-app:inputType="129"    <!-- Password (Text) -->
-app:inputType="18"     <!-- Password (Number) -->
-app:inputType="145"    <!-- Visible Password -->
+// Fires immediately on every tap — before animation starts, selected or not
+navBar.setOnClickMenuListener(item -> {
+    // good for analytics or haptic feedback
+});
+
+// Fires when the user taps the tab that is already selected
+// The library also automatically triggers a shake animation on that tab
+navBar.setOnReselectListener(item -> {
+    // e.g. scroll RecyclerView to top
+});
+
+// Fires on initialization (after setTabs) and on every subsequent selection,
+// including programmatic calls to setSelectedIndex() or show()
+navBar.setOnShowListener(item -> {
+    // good for tracking screen visibility
+});
+
 ```
+MorphNavTabItem.Model
+```java
 
----
+// Minimal — same drawable for active and inactive state
+new MorphNavTabItem.Model("Label", R.drawable.ic_icon);
 
-## 📱 RTL Support
+// With a distinct selected drawable (rendered inside the bubble, tinted with activeIconColor)
+new MorphNavTabItem.Model("Label", R.drawable.ic_icon, R.drawable.ic_icon_filled);
 
-```xml
-app:rightDirection="true"
+// With accessibility content description
+new MorphNavTabItem.Model("Label", R.drawable.ic_icon, R.drawable.ic_icon_filled, "Home tab");
+
 ```
+When selectedIconResId is 0, the library falls back to iconResId for the active state.
+
+---
+##  Attributes
+
+
+| Attribute | Type | Description |
+|----------|------|-------------|
+| `lbv_barColor` | color | Background color of the navigation bar |
+| `lbv_shadowColor` | color | Shadow color behind the bar |
+| `lbv_selectedColor` | color | Color of the morphing bubble |
+| `lbv_unselectedColor` | color | Stored accent color for unselected state |
+| `lbv_activeIconColor` | color | Tint color for the active icon |
+| `lbv_inactiveIconColor` | color | Tint color for inactive icons |
+| `lbv_barRadius` | dimension | Corner radius of the bar |
+| `lbv_barHeight` | dimension | Total height of the bar |
+| `lbv_barSideMargin` | dimension | Left and right outer margin of the bar |
+| `lbv_barBottomMargin` | dimension | Bottom margin of the bar |
+| `lbv_itemIconSize` | dimension | Size of each tab icon |
+| `lbv_shadowBlur` | dimension | Blur radius of the bar shadow |
+| `lbv_shadowDy` | dimension | Vertical shadow offset |
+| `lbv_animationDuration` | integer | Duration of tab transition animation in milliseconds |
+| `lbv_showLabels` | boolean | Enables label rendering under tabs |
+| `lbv_labelTextSize` | dimension | Label text size |
+| `lbv_labelFontFamily` | string | Font family used for labels |
+| `lbv_showLabelOnlyOnSelected` | boolean | Shows label only for the selected tab |
+| `lbv_badgeBackgroundColor` | color | Badge background color |
+| `lbv_badgeTextColor` | color | Badge text color |
+| `lbv_badgeTextSize` | dimension | Badge text size |
 
 ---
 
-## 📄 License
-This project is licensed under the MIT License.
+## License
+
+This project is licensed under the MIT License. See LICENSE for details.
 
 ---
+
 ## Keywords
 
-android custom edittext, floating hint edittext, material input field android, password toggle edittext, android ui library, custom input view
+ndroid bottom navigation bar, morphing bubble navbar, elastic stretch animation android, canvas custom view android, damped shake animation, animated tab bar android, physics navigation bar android
 
+---
 ---
 ## 👩‍💻 Author
 
-Melikash98
+If you find **MorphNavBar** useful, please consider giving it a **⭐ star on GitHub** — it helps the project grow and motivates further development.
+
+For **feature requests, improvements, bug reports, or similar suggestions**, please **send me a message** or open an issue. Your feedback is highly appreciated.
 
 
