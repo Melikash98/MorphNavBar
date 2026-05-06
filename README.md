@@ -48,7 +48,7 @@ dependencyResolutionManagement {
 
 ```gradle
 dependencies {
-	        implementation 'com.github.Melikash98:MorphNavBar:v2.2.8'
+	        implementation 'com.github.Melikash98:MorphNavBar:v2.2.9'
 	}
 ```
 ##  Usage
