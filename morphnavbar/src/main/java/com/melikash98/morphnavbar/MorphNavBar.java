@@ -42,7 +42,7 @@ import java.util.Map;
 
 
 public class MorphNavBar extends View {
-    private static final int DEFAULT_ANIMATION_DURATION = 1400;
+    private static final int DEFAULT_ANIMATION_DURATION = 800;
 
     private final Paint barPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -407,9 +407,7 @@ public class MorphNavBar extends View {
             animator.cancel();
             animator = null;
         }
-
         final int oldIndex = selectedIndex;
-
         if (!animate || centerXs.isEmpty()) {
             selectedIndex = index;
             fromIndex = index;
@@ -428,7 +426,6 @@ public class MorphNavBar extends View {
             if (showListener != null && !items.isEmpty()) {
                 showListener.onShowItem(items.get(selectedIndex));
             }
-
             invalidate();
             return;
         }
@@ -436,16 +433,6 @@ public class MorphNavBar extends View {
         fromIndex = selectedIndex;
         toIndex = index;
         progress = 0f;
-
-        selectedIndex = toIndex;
-        updateContentDescription();
-
-        if (listener != null && !items.isEmpty()) {
-            listener.onTabSelected(selectedIndex, items.get(selectedIndex));
-        }
-        if (showListener != null && !items.isEmpty()) {
-            showListener.onShowItem(items.get(selectedIndex));
-        }
 
         startShake(fromIndex);
 
@@ -469,8 +456,18 @@ public class MorphNavBar extends View {
             @Override
             public void onAnimationEnd(Animator animation) {
                 if (cancelled[0]) return;
+
+                selectedIndex = toIndex;
                 fromIndex = selectedIndex;
                 progress = 1f;
+                updateContentDescription();
+
+                if (listener != null && !items.isEmpty()) {
+                    listener.onTabSelected(selectedIndex, items.get(selectedIndex));
+                }
+                if (showListener != null && !items.isEmpty()) {
+                    showListener.onShowItem(items.get(selectedIndex));
+                }
                 invalidate();
                 animator = null;
             }
