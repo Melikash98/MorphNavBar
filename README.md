@@ -3,7 +3,9 @@
 # Editify
 
 [![](https://jitpack.io/v/Melikash98/MorphNavBar.svg)](https://jitpack.io/#Melikash98/MorphNavBar)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Melikash98/MorphNavBar/blob/main/LICENSE)
+[![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg)](https://android-arsenal.com/api?level=21)
+[![Platform](https://img.shields.io/badge/platform-Android-orange.svg)](https://developer.android.com)
 
 **A beautiful, lightweight, fully customizable animated navigation bar with morphing bubble selection, badges, labels, and smooth tab transitions.**
 
